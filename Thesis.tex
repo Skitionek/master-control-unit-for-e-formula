@@ -9,6 +9,15 @@
 
 \documentclass[\classfontsize,\papersize,twoside,showtrims,extrafontsizes]{memoir}
 
+%%%%%%%%%%%
+% my packages
+\usepackage{wrapfig}
+
+\newcommand\Chapter[2]{
+  \chapter[#1: {\itshape#2}]{\Large\itshape#2}
+}
+%%%%%%%%%%%
+
 \input{preamble/general}
 \input{preamble/fonts}
 \input{preamble/etc}
@@ -26,7 +35,7 @@
 \frontmatter
 \include{frontmatter/Abstract}
 \include{frontmatter/Preface}
-\include{frontmatter/Acknowledgements}
+% \include{frontmatter/Acknowledgements} \todo{}
 \clearforchapter
 \tableofcontents
 \clearforchapter
@@ -132,7 +141,9 @@
 % \blinddocument
 
 \appendix
-\include{appendices/Pumps}
+\input{appendices/Pumps}
+\let\cleardoublepage\clearpage
+\input{appendices/Diff}
 
 \backmatter
 \printbibliography

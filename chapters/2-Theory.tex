@@ -14,13 +14,43 @@
 \section{Calculations for differential based on steering angle} \label{diff_calc}
 
 Due to the racing character the vehicle were build with parallel steering mechanism. Considering the dynamics of the vehicle in high speeds during the turn the outer wheel works under presumably higher load therefore having smaller slip angle than relieved inner wheel. In well designed parallel steering system these forces should cancel each other therefore we can make the calculations based on two wheels model with unchanged steering angle \todo{bike model}.
-In this model we can simply calculate the radius of turn measuring from rear axle by trigonometric equation $Rear axis turn radius = cot( steering angle ) * wheelbase$. Now moving back to four wheel model, since the radius is directly proportional to circumference we can calculate the proportions of how fast should wheels rotate in compare to consider rear wheel from previous model. This can be done by simply adding half of rear track to calculated radius and divide by it.
-\begin{equation}
-    inner wheel proportional speed = \frac{rear axis radius - rear track / 2}{rear axis radius}
+In this model we can simply calculate the radius of turn measuring from rear axle by trigonometric equation \ref{diff_eq_w}.
+
+\begin{equation}\label{diff_eq_w}
+    R = cot( \gamma ) * w
+\end{equation}
+Where:
+\begin{description}
+    \item[$R$] rear axis radius (from the middle of the axis to pivot point)
+    \item[$\gamma$] steering angle
+    \item[$w$] wheelbase
+\end{description}
+
+Now moving back to four wheel model, since the radius is directly proportional to circumference we can calculate the proportions of how fast should wheels rotate in compare to consider rear wheel from previous model. This can be done by simply adding half of rear track to calculated radius and divide by it.
+% \begin{equation}
+%     inner~wheel~proportional~speed = \frac{rear~axis~radius - rear~track / 2}{rear~axis~radius}
+% \end{equation}
+% \begin{equation}
+%     outer~wheel~proportional~speed = \frac{rear~axis~radius + rear~track / 2}{rear~axis~radius}
+% \end{equation}
+
+
+
+\begin{equation}\label{diff_eq}
+    \alpha_{inner} = \frac{R - T/2}{R}
 \end{equation}
 \begin{equation}
-    outer wheel proportional speed = \frac{rear axis radius + rear track / 2}{rear axis radius}
+    \alpha_{outer} = \frac{R + T/2}{R} 
 \end{equation}
+Where:
+\begin{description}
+    \item[$\alpha$] wheel proportional travel
+    \item[$T$] rear track
+\end{description}
+
+
+
+
 These numbers can be successfully used as multiplicands in differential system for either torque or speed control loops.
 
 \section{Regenerative Breaking} \label{regenerative_theory_section}

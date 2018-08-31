@@ -51,7 +51,7 @@ The pumps control signal is updated only once per 100 millisecond since temperat
     \label{pump_50_1}
 \end{figure}
 
-I have repeat this process for all above mentioned cases confirming that this sub-system works correctly. The figures for all the other cases can be found in appendix \todo{Appendix pumps}. To present all the results in clear graphical way I have combined them into scatter chart plotting the accelerator against temperature values and colour mapping them by measured output \ref{Raw_pump_sum}. To show the validity of data on the right you can see the same graph with the background coloured based on mathematical model.
+I have repeat this process for all above mentioned cases confirming that this sub-system works correctly. The figures for all the other cases can be found in appendix \ref{pumps_graphs}. To present all the results in clear graphical way I have combined them into scatter chart plotting the accelerator against temperature values and colour mapping them by measured output \ref{Raw_pump_sum}. To show the validity of data on the right you can see the same graph with the background coloured based on mathematical model.
 
 \begin{figure}[h]
     \centering
@@ -69,6 +69,108 @@ I have repeat this process for all above mentioned cases confirming that this su
 \end{figure}
 
 
+\section{Regenerative Breaking}
+Due to the fact that the car battery has not been finished I have been required to make the measurements on setup powered by laboratory amplifier. This greatly narrowed the spectrum in which I could check if the system operates correctly.
+
+As the amplifier did not accept backward current and the car could not be driven I could not measure actual regenerative breaking. On the other hand limited current reduced dynamics of the setup and having the wheels freely spinning in air became safely issue for high torque/speed.
+
+To prove the validity of the programme I have measured the torque with accompanying speed for the acceleration pedal displacement from $0$ to $25\%$. As mentioned in the method section \ref{speed_mode} for first $15\%$ percent the control system has negative feedback loop effectively making the speed of the vehicle linearly proportional to the pedal displacement.
+Pedal position has been changed by $1\%$ on each second as shown in \ref{torq_anal}. 
+
+% \begin{wrapfigure}{!r}{0.5\textwidth}
+%     \vspace{-20pt}
+%     \begin{center}
+%     \includegraphics[width=0.48\textwidth]{figures/torq_anal}
+%     \label{torq_anal}
+%     \end{center}
+%     \caption{Test signal for accelerator displacement}
+%     \vspace{-20pt}
+% \end{wrapfigure}
+
+As expected torque output from system was reflection of pedal positions as long as the wheels did not spin and for speeds from $10-20 km/h$ we can observe linear dependency between pedal and speed. Then for the speeds above $20km/h$ there is simple torque control so the wheels (without load) starts to gain speed in exponential tempo.
+
+To put in bigger picture let me refer to theoretical model (\ref{regen_ideal}). In the figure \ref{torq_anal} I present the measured output using idealised model as the background. 
+
+
+\begin{figure}[h]
+    \centering
+        \subbottom[Test signal for accelerator displacement]{
+            \includegraphics[width=0.46\textwidth]{figures/torq_anal}
+            \label{torq_anal}
+            %\caption{Test signal for accelerator displacement}
+        }
+        ~
+        \subbottom[Measured correlation against idealised model]{
+            \includegraphics[width=0.46\textwidth]{figures/regen_anal.eps}
+            %\caption{Measured correlation against idealised model}
+            \label{regen_anal}
+        }
+        \caption{Torque control summary}
+    \label{torq_ctl}
+\end{figure}
+
+% \begin{figure}[h]
+%     \centering
+%         \includegraphics[height=5.8cm]{figures/regen_anal.eps}
+%         \caption{Measured correlation against idealised model}
+%         \label{regen_anal}
+% \end{figure}
+
+Beside above mentioned dependencies one can observe that there is initial value of torque needed for wheel to start spinning and around half a value torque to maintain its angular momentum. 
+
+\section{Differential}
+To confirm validity of implemented model I have commit measurements where steering wheel were rotated for each $~5\%$ displacement of acceleration pedal and where acceleration pedal were pressed fully for seemingly equally distributed 21 positions of steering wheel in its full scale of operation. Detailed measurements results can be found in appendix \ref{diff_app}.
+
+Meanwhile summarised version can be seen in figure \ref{diff_sum}.
+
+\begin{figure}[h]
+    \centering
+        \subbottom[]{
+            \includegraphics[width=0.46\textwidth]{figures/ste_torq.eps}
+            \label{}
+            %\caption{Test signal for accelerator displacement}
+        }
+        ~
+        \subbottom[]{
+            \includegraphics[width=0.46\textwidth]{figures/acc_torq.eps}
+            %\caption{Measured correlation against idealised model}
+            \label{diff_sum_b}
+        }
+        \caption{Relation between acceleration pedal displacement, steering wheel angle and normalised torque difference}
+    \label{diff_sum}
+\end{figure}
+
+As one can notice in \ref{diff_sum_b} motor torque difference is linearly proportional to acceleration pedal and steering wheel displacement. This relation is clearly maintained for first $\~80\%$ of pedal travel and it saturates on torque difference equal about $42\%$ in rest of the scale. It is a desired behaviour of this control. To explain all the values let me refer to equations \ref{diff_eq} and \ref{diff_eq_w} from the theory section.
+
+In vehicle I been working on has the maximum steering angle of 36°, wheelbase 1740mm and track equal to 1270mm. Taking these values together into mentioned equations results in wheel disproportion: 
+
+\begin{equation*}
+    \alpha_{inner} = 0.7349 ~~~~~
+    \alpha_{outer} = 1.2651
+\end{equation*}
+
+From this point target torque is calculated simply by multiplication with percent of pedal displacement and maximum toque. What is reflected in measurements for first $80\%$ of pedal travel. 
+Behaviour in remaining $20\%$ is an result of limited power and accompanying safety feature described in \ref{diff_meth}. To make differential functional while using near full available power desired torque is scaled down so the maximum torque per wheel is never exceed (equation \ref{diff_saf}).
+The functionality is simply active if only: \begin{equation*}
+    \alpha_{outer} * d_{acc}>1
+\end{equation*} 
+Where:
+\begin{description}
+    \item[$d_{acc}$] acceleration pedal displacement
+\end{description}
+
+\begin{wrapfigure}{!r}{0.5\textwidth}
+    \vspace{-20pt}
+    \begin{center}
+        \includegraphics[width=0.46\textwidth]{figures/diff_123}
+        \label{diff_123}
+        \caption{Motors torque compassion for steering wheel rotated 124° (maximum steering angle) left}
+    \end{center}
+    \vspace{-20pt}
+\end{wrapfigure}
+So taking into consideration maximum steering angle it becomes active for $d_{acc} \approx 78.91\%$ which can been seen in figure \ref{diff_sum_b}.
+
+To further confirm this safety functionality figure \ref{diff_123} consist only of samples for maximum steering angle independently showing torque of two wheels. The outer wheel saturates on maximum torque where the inner one maintain proportion needed for differential steering.
 
 
 
@@ -76,4 +178,6 @@ I have repeat this process for all above mentioned cases confirming that this su
 
 
 
+\section{System performance}
+\todo{!}
 Measured interval at which the pedals and steering wheel status is send is equal to $6,8ms$.

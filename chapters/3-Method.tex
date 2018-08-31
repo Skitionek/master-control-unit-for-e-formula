@@ -51,7 +51,7 @@ Implemented controller provides following functionality:
 \end{itemize}
 
 
-\chapter{Overview of experimental setup}
+\section{Overview of experimental setup}
 Having not sufficient financial support enforced many compromises on design which I did not have direct influence on. The decision was made that will be running in low voltage - high current setup so we could use cost efficient lithium-ion batteries. 
 Although theoretically possible cabling and connector sizing was a bit overwhelming for responsible teams.
 
@@ -78,7 +78,7 @@ As shown all the communication with master control unit is based on CAN bus.
 All small subsystems are based on Arduino evaluation boards.
 
 
-\subsection{Pedals sensor}
+\section{Pedals sensor}
 System to measure pedals and steering wheel position is based on Arduino evaluation board. Which is a simple evaluation setup build upon Atmel ATmega8 with $16MHz$ oscillator.
 
 Now considering the sampling rate of this sub-module it has been programmed to use prescaler for A/D converter with value of 128. Referring to datasheet basic conversion takes 13 clock cycles so we should except sampling rate of about $16MHz/128/13 = 9615Hz = 104µs$ \cite{Atmega8}.
@@ -102,7 +102,7 @@ Now considering timing, the CAN frame (\todo{CAN frame graphic (wiki like)}) con
 Assuming no further improvements we should expect the pedals sub-systems is capable of sending the pedals, steering wheel position in time interval of about $5,2ms$ in normal operation.
 Additionally, if any of the above mentioned errors occurred the second CAN frame is sent containing two bytes with bitwise encoded errors extending the expected interval into $~5,3ms$.
 
-\subsection{Pump control}
+\section{Pump control}
 In our car we have used \todo{which pump} pumps, which can be controlled by signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with low-pass filter (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}).
 The subsystem acts simply by controlling pulse width based on the value received by CAN message from master control unit. It also provide basic emergency behaviour in the manner that if no message was sensed over one second the pumps are turned on to work with full power.
 
@@ -111,19 +111,19 @@ The subsystem acts simply by controlling pulse width based on the value received
 
 
 
-\section{Implementation of electrical differential based on steering angle}
+\section{Implementation of electrical differential based on steering angle}\label{diff_meth}
 In my implementation I have enriched calculations explained in \ref{diff_calc}. Starting with the steering wheel, the sensor output in normalised to the measured minimum and maximum steering wheel angles ($\pm123\deg$) so the meaningful value can be shown in remote control panel as well as saved in logs. 
 Then since it is linearly proportional it is simply converted to steering angle ($\pm35\deg$). To prevent any miss usage all the values are coerced on the go to be within the ranges.
 
 Having commanded output power (in percentage) basic differential functionality could be obtained just by multiplying it with maximum allowed/available torque and proportion on per wheel base. However, it would start failing for power close to $100\% $, although total torque will remain under limit, the outer wheel can go above limit by up to ($20\% $).
 This situation would be especially dangerous if the maximum torque per wheel base start to would saturate. In this case the differential would gradually stop to function effectively pushing the car out of desired curve.
 To avoid this miss-behaviour I added the code to check if after previous calculation any of the wheels is about to be set to more than maximum torque and scale both of them accordingly.
-\begin{equation*}
+\begin{equation}\label{diff_saf}
     \tau_{left,right} = \begin{cases}
         \tau_{left,right} = P * \gamma_{left,right} * \tau_{max} & \text{se $m(P,\gamma_{left,right}) \leq 1$}\\
         \tau_{left,right} = P * \gamma_{left,right} * \tau_{max} / m(P,\gamma_{left,right}) & \text{se $m(P,\gamma_{left,right}) > 1$}\\
     \end{cases}
-\end{equation*}
+\end{equation}
 Where:
 \begin{description}
     \item[P] desired output power ($0-100\%$)
@@ -156,7 +156,7 @@ Where:
 
 It follows the simple idea to use variable portion of pedal displacement for regenerative breaking based on speed.
 When the user presses acceleration pedal in stationary vehicle the whole available scale is used to control torque giving expected instant response. After reaching $10km/h$ the pedal  displacement used for regenerative breaking increases gradually to reach $15\%$ while travelling with speed equal or higher than $20km/h$.
-What else is worth to mention is that as a result for the pedal displacement from $0-15\%$ we should expect the car to act as it would be controlled in speed mode. The characteristic would be firstly saturated by low torque however within enough power to make the car accelerate we should be able to observe linear correlation between pedal displacement and speed.
+What else is worth to mention is that as a result for the pedal displacement from $0-15\%$ we should expect the car to act as it would be controlled in speed mode.\label{speed_mode} The characteristic would be firstly saturated by low torque however within enough power to make the car accelerate we should be able to observe linear correlation between pedal displacement and speed.
 To summarise the expected idealised correlation between torque, pedal displacement and speed has been shown in figure \ref{regen_ideal}.
 
 \begin{figure}[h]
@@ -165,3 +165,7 @@ To summarise the expected idealised correlation between torque, pedal displaceme
             \label{regen_ideal}
         \caption{Regenerative breaking / torque control}
 \end{figure}
+
+
+
+
