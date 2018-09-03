@@ -24,15 +24,33 @@ From the early beginning I have been developing the code of master control unit 
 Most simple classification of subsystems can be based on communication protocol being used. 
 
 \subsection{CAN integration}
-To start with I had to implement a CAN library so it would be possible to make certain threads wait for message with predefined id, one from array of ids or just any message. 
+To start with I had to implement a CAN library which would let me service messages from the code running on real time processor. I did it based on one of the provided examples, however, to meet my needs it required some ground modifications.
 
-To achieve it, I have a functionality deployed on FPGA (Field Programmable Gate Array) which simply translates input/output messages into the arrays of 8x unsigned integers. Read messages  are furthermore pushed into the FIFO register and interrupt on real-time processor is called.
+Especially functionality which has been missing is the ability to wait for message with certain id, one from array of ids or just any message. 
+\subsubsection{Reading}
 
-Upon initiation of real-time programme additional process is spawned in the background which is responsible for communication with the FPGA. For sending a message it simply pushes data to FPGA and marks it as ready to send. When it comes to reading the process waits for interrupt from FPGA and acknowledges it after data read is finished. 
+To achieve it, I have a functionality deployed on FPGA (Field Programmable Gate Array) which simply translates input/output messages into the arrays of 8x unsigned integers. Read messages  are furthermore pushed into the FIFO register. In parallel a consumer process is running which takes messages from the register set it as an output and rise an interrupt on real-time processor to notify that data is ready to be read.
 
-Then look up table is check for existence of conditional variable for given id, it is created if does not exist, and updated with new message. Additionally conditional variable containing id of last received message id is updated.
+Upon initiation of device a programme is run on real-time processor which beside main process spawns additional one in the background. This one furthermore is responsible for communication with the FPGA so whenever message arrives it services interrupt by coping the message and sends the interrupt acknowledge back to FPGA so next messages can be send. Meanwhile, CAN frame is stored in the table indexed by its ID and two notifications are sent (for desired frame and for arrival of any message)\footnote{Usage of LabVIEW synchronisation primitive "Queue" further described in \todo{queue description}}.
 
-Based to this architecture I implemented functions which can wait for any message, one with certain id or one from ids set.
+Now depend of place in the code read function can be called in one of three ways:
+\begin{description}
+    \item[Read All] - function blocks thread until notification arrives that any message has been received (or upon timeout) and returns it. Example of usage would be a logging purpose.
+    \item[Read Some] - for given list of message IDs function behaves similar to "Read All". However, notification is read and check if contains one of the listed IDs if not it starts again and return frame upon success (or error upon timeout). Example - Error handler.
+    \item[Read ID] - waits for notification associated with certain ID. Example - read pedal position.
+    
+    
+%     Then look up table is check for existence of conditional variable for given id, it is created if does not exist, and updated with new message. Additionally conditional variable containing id of last received message id is updated.
+
+% Based to this architecture I implemented functions which can wait for any message, one with certain id or one from ids set.
+
+\end{description}
+
+\subsubsection{Writing}
+For sending a message it simply pushes data to FPGA and marks it as ready to send. FPGA is constantly checking the ready to send status and whenever it becomes true sends the data.
+
+
+Thank to this architecture programme is easy to use, read and modify.
 
 \subsection{Device operation states}
 Although, during operation everything is event based the whole application itself can be considered a state machine where normal operation is just one of the states.
