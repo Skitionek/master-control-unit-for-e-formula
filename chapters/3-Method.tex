@@ -99,7 +99,7 @@ This system sense all the information which is:
 After the measurement the information is sent through CAN bus with baud rate of 500kbit/s (used CAN module was not capable to work with higher baud rates). Pedals position although being read on 10 bits is averaged and only 8 significant bits are sent. We assumed that 256 quantization steps is enough in this case. It allowed us shorten CAN frame to consist only 4 bytes of data.
 Now considering timing, the CAN frame (\todo{CAN frame graphic (wiki like)}) consist of 44 basic bits plus 4 bytes of data in our case. The total time of sending/receiving would be therefore $\frac{76}{500kbit/s} = 152us$.
 
-Assuming no further improvements we should expect the pedals sub-systems is capable of sending the pedals, steering wheel position in time interval of about $5,2ms$ in normal operation.
+Assuming no further improvements we should expect the pedals sub-systems is capable of sending the pedals, steering wheel position in time interval of about $5,2ms$\label{pedal_ideal_time} in normal operation.
 Additionally, if any of the above mentioned errors occurred the second CAN frame is sent containing two bytes with bitwise encoded errors extending the expected interval into $~5,3ms$.
 
 \section{Pump control}

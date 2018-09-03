@@ -179,5 +179,23 @@ To further confirm this safety functionality figure \ref{diff_123} consist only 
 
 
 \section{System performance}
-\todo{!}
-Measured interval at which the pedals and steering wheel status is send is equal to $6,8ms$.
+As mentioned due to malfunctioning motor controller the system performance was limited. However, as I am going to show in the next figures implemented workaround performs considerably well and is not a bottleneck in current state.
+
+Place where the timing is the most important is in between receiving of pedal/steering wheel status and sending torque control signal to drives.
+\begin{figure}[h]
+    \centering
+            \includegraphics[width=0.8\textwidth]{figures/perf_rep.eps}
+            \label{perf_over}
+            \caption{CAN and CANOpen timing overview}
+\end{figure}
+
+As shown in the figure \ref{perf_over} there are messages on the CAN bus which appears within constant interval of about $6,8 ms$. Each of these messages contains break, accelerator and steering wheel position and the timing is close to one estimated in method chapter (\ref{pedal_ideal_time}) of $5,2 ms$.
+
+Each sensors position message is closely followed by four messages on CANOpen bus which are responsible for accordingly changing target torque values in motor controllers. 
+\begin{figure}[h]
+    \centering
+            \includegraphics[width=0.8\textwidth]{figures/perf.eps}
+            \label{perf}
+            \caption{Control torque loop timing}
+\end{figure}
+As shown in figure \ref{perf} after receiving it takes just $~1.11 ms$ to first respond and second respond is sent in $~0.89 ms$ after. As in the code two calls to labview closed library responsible for CANOpen communication are issued one after another, it suggest that in both cases about $0.89 ms$ is taken to just send a message. Therefore I am convinced that CAN receive code, interrupt issue it service and torque calculations takes only about $0.22 ms$ of total time.
