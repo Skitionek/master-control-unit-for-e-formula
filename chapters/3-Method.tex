@@ -13,44 +13,141 @@
 % You should aim to describe weaknesses as well as strengths. An excellent thesis distinguishes itself by defending – and at the same time criticising – the choices made.
 
 \chapter{Method}
-As previously mentioned the main control unit has be deployed on cRIO9033 - National Intruments' controller equipped with real-time processor and re-configurable FPGA unit. The reasoning for usage of this device was that it has more than sufficient computation power for the task and with additional modules provides support for basic CAN communication as well as high level CANOpen abstraction.
+
+% Having not sufficient financial support enforced many compromises on design which I did not have direct influence on. The decision was made that will be running in low voltage - high current setup so we could use cost-efficient lithium-ion batteries. 
+% Although theoretically possible cabling and connector sizing was a bit overwhelming for responsible teams.
 
 
-In my setup I have been using module NI9853 to directly receive and send a CAN messages and NI9881 for communication with the motor controllers based on CANOpen standard.
+\begin{figure}[b]
+	\centering
+    	\includegraphics[width=0.8\textwidth]{figures/silverstone.jpg}
+        \caption{Built car on Silverstone race circuit}
+        \ref{pic:silverstone}
+\end{figure}
+
+
+We\todo{is it right to say we?} have built an electric car from scratch based on buggy frame, where all the pipes are welded together and all the components directly attached to it. Although in this solution, all the vibrations are transferred to the driver (reducing his comfort) it is a durable and light solution - the aspects which were the most important due to the racing character of the vehicle. 
+
+In our final setup we used:
+\begin{itemize}
+    \item Two EMRAX228 motors which nominal power of about 50kW (when liquid cooled)
+    \item Two emDrive500 controllers capable full usage of AM motors
+    \item Arduino with CAN shields to act as intelligent sensors/controllers
+    \item Two \todo{which pumps? Iwaki direct drive pump rd-40e24-hn1v} pumps for cooling purposes
+    % \begin{wrapfigure}
+    %     \includegraphics[width=0.33\textwidth]{figures/Pump.pdf}
+    % \end{wrapfigure}
+    \item National Instruments' cRIO-9033 as a main control unit
+\end{itemize}
+
+This result in the system which in a simplified manner has been presented in figure \todo{figure ref}.
+
+\todo{figure}
+
+As shown all the communication with the master control unit is based on CAN bus. 
+
+
+
+
+
+
+All small subsystems are based on Arduino evaluation boards.
+
+
+
+
+As previously mentioned the main control unit has been deployed on cRIO9033 - National Instruments' controller equipped with a real-time processor and re-configurable FPGA unit. The reasoning for usage of this device was that it has more than sufficient computation power for the task and with additional modules provides support for basic CAN communication as well as high-level CANOpen abstraction.
+
+
+In my setup, I have been using module NI9853 to directly receive and send a CAN messages and NI9881 for communication with the motor controllers based on CANOpen standard.
 
 \section{Master control unit software implementation}
-From the early beginning I have been developing the code of master control unit using event based programming paradigm. The reasoning of this is asynchronous, real-time nature of of such unit.
+From the early beginning, I have been developing the code of master control unit using event-based programming paradigm. The reasoning of this is asynchronous, real-time nature of such unit.
 
 Most simple classification of subsystems can be based on communication protocol being used. 
 
-\subsection{CAN integration}
-To start with I had to implement a CAN library which would let me service messages from the code running on real time processor. I did it based on one of the provided examples, however, to meet my needs it required some ground modifications.
+\section{Communication protocols}
 
-Especially functionality which has been missing is the ability to wait for message with certain id, one from array of ids or just any message. 
-\subsubsection{Reading}
+\subsubsection{CAN integration}
+To start with I had to implement a CAN library which would let me service messages from the code running on the real-time processor. I did it based on one of the provided examples, however, to meet my needs it required some ground modifications.
 
-To achieve it, I have a functionality deployed on FPGA (Field Programmable Gate Array) which simply translates input/output messages into the arrays of 8x unsigned integers. Read messages  are furthermore pushed into the FIFO register. In parallel a consumer process is running which takes messages from the register set it as an output and rise an interrupt on real-time processor to notify that data is ready to be read.
+Especially functionality which has been missing is the ability to wait for a message with a certain id, one from an array of ids or just any message. 
+\paragraph{Reading}
 
-Upon initiation of device a programme is run on real-time processor which beside main process spawns additional one in the background. This one furthermore is responsible for communication with the FPGA so whenever message arrives it services interrupt by coping the message and sends the interrupt acknowledge back to FPGA so next messages can be send. Meanwhile, CAN frame is stored in the table indexed by its ID and two notifications are sent (for desired frame and for arrival of any message)\footnote{Usage of LabVIEW synchronisation primitive "Queue" further described in \todo{queue description}}.
+To achieve it, I have a functionality deployed on FPGA (Field Programmable Gate Array) which simply translates input/output messages into the arrays of 8x unsigned integers. Read messages are furthermore pushed into the FIFO register. In parallel, a consumer process is running which takes messages from the register set it as an output and raise an interrupt on the real-time processor to notify that data is ready to be read.
 
-Now depend of place in the code read function can be called in one of three ways:
-\begin{description}
-    \item[Read All] - function blocks thread until notification arrives that any message has been received (or upon timeout) and returns it. Example of usage would be a logging purpose.
-    \item[Read Some] - for given list of message IDs function behaves similar to "Read All". However, notification is read and check if contains one of the listed IDs if not it starts again and return frame upon success (or error upon timeout). Example - Error handler.
-    \item[Read ID] - waits for notification associated with certain ID. Example - read pedal position.
+Upon initiation of the device, a programme is run on the real-time processor which beside the main process spawns an additional one in the background. This one furthermore is responsible for communication with the FPGA so whenever a message arrives it services interrupt by copying it and sends the acknowledge back to FPGA so next one can be transmitted. Meanwhile, CAN frame is stored in the table indexed by its ID and two notifications are sent (for the desired frame and for the arrival of any message)\footnote{Usage of LabVIEW synchronisation primitive "Queue" further described in \todo{queue description}}.
+
+Now depending on a place in the code read function can be called in one of three ways:
+\begin{description}[labelindent=1cm]
+    \item[Read All] - function blocks the thread until notification arrives that any message has been received (or upon timeout) and returns it. Example of usage would be a logging purpose.
+    \item[Read Some] - for given list of message IDs function behaves similarly to "Read All". However, notification is read and check if contains one of the listed IDs if not it starts again and return frame upon success (or error upon timeout). Example - Error handler.
+    \item[Read ID] - waits for notification associated with the certain ID. Example - read pedal position.
     
-    
-%     Then look up table is check for existence of conditional variable for given id, it is created if does not exist, and updated with new message. Additionally conditional variable containing id of last received message id is updated.
+%     Then look up table is check for the existence of a conditional variable for given id, it is created if does not exist, and updated with a new message. Additionally, a conditional variable containing the id of last received message id is updated.
 
-% Based to this architecture I implemented functions which can wait for any message, one with certain id or one from ids set.
+% Based to this architecture I implemented functions which can wait for any message, one with a certain id or one from ids set.
 
 \end{description}
 
-\subsubsection{Writing}
+\paragraph{Writing}
 For sending a message it simply pushes data to FPGA and marks it as ready to send. FPGA is constantly checking the ready to send status and whenever it becomes true sends the data.
 
+\vspace{5mm}
+\noindent Thank\todo{seriously without to!?} this architecture CAN messaging part is easy to use, read and modify.
 
-Thank to this architecture programme is easy to use, read and modify.
+\subsubsection{CANOpen}
+For the simplicity and maximum throughput although CANOpen is an abstraction layer over CAN bus an additional line has been used only for CANOpen communication. It has been used just to link two motor controllers and NI-9881 module (plugged into cRIO).
+
+For the usage, CANOpen seemed like the best choice. It provides great flexibility in the way that all parameters can be accessed the way as they would be stored in memory registry without any pre-configuration. Furthermore, if setup correctly certain number of parameters can be accessed without any protocol overhead providing maximum bus throughput.
+
+As previously mentioned in \todo{where} CANOpen abstraction consists of 6 complementary sub-protocols.
+\begin{description}[labelindent=1cm]
+    \item[NMT] Network management - Provides unified control over the devices state (Boot up, Pre-operational, Operational, Stopped)
+    \item[SDO] Service Data Object - verbose protocol by default providing access to all the parameters of the device, it works based on two messages schema first describing which data should be sent next then in second sending actual data
+    \item[PDO] Process Data Object - configurable sets of parameters to send/receive upon change or after SYNC message
+    \item[SYNC]	Synchronisation Object - issue request of device status
+    \item[TIME]	Time Stamp Object - is used to synchronise with device clock and it had no use in this project
+    \item[EMCY] Emergency Object - asynchronously broadcast errors
+\end{description}
+
+As it meant to be I implemented one drive control based on NMT, SDO, PDO and SYNC protocols. Using NMT to control general state, SDO to control all the parameters before setting the device into operational mode and control device-specific states and PDO combined with SYNC messages to read device status and send control messages.
+
+However, as it came to controlling two motors simultaneously conflicting messages ids in PDO and SYNC protocols needed to be changed. Although many tries it was not possible to change this values. Contacting the manufacturer drop the light on the case as they were aware that their devices malfunctions and were not able to provide any fix for the issue.
+
+So for the two motor configuration, I had to implement a workaround by using slower and not providing all the functionality SDO protocol.
+Usage of this protocol caused a drastic drop in channel throughput considering for instance reading of device status:
+\begin{table}[H]
+\begin{tabular}{|l|c|}
+    \hline
+    Data & Data size [byte] \\
+    \hline
+    Status word & 2 \\
+    Controller Temperature & 1 \\
+    Motor Temperature & 1 \\
+    Error Code & 2  \\
+    Error Register & 1 \\
+    Torque Actual Value & 2  \\
+    Velocity actual Value & 4  \\
+    Electrical Angle & 2  \\
+    Electric Power & 4 \\
+    \hline
+    \hfill Sum & 19 \\
+    \hline
+\end{tabular}
+\end{table}
+
+As each PDO message can contain up to 8 bytes aforementioned list of parameters would need to be divided into 3 CAN frames and as an result $46bits*3+19bytes+\epsilon = 290 bits +\epsilon$  \hspace{1cm}\footnote{\label{foot:eps}$\epsilon$ has been used to represent stuffed bits} needs to be send. On the other hand sending the same data with SDO protocol requires request-respond schema for each value so $46bits*18 + 19bytes + 9*4bytes + \epsilon = 1268 bits + \epsilon$ \hspace{1cm} \ref{foot:eps} needs to be send.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/CANOpen vs CAN.png}
+    \caption{CANOpen vs CAN}
+    \label{fig:canopen_bitwise}
+    \todo{enrich it by missing fields}
+\end{figure}
+
+Furthermore, also the target torque off motor controllers needs to be adjusted SDO messages. In this case performance drawback is even more visible, if the PDO protocol could be used torque values could be sent together within one CAN frame ($46bits+4bytes=78 bits$), however, within SDO 4 CAN frames needs to be sent ($46bits*4+4bytes+4bytes*2=280bits$).
 
 \subsection{Device operation states}
 Although, during operation everything is event based the whole application itself can be considered a state machine where normal operation is just one of the states.
@@ -62,49 +159,22 @@ Implemented controller provides following functionality:
 \begin{itemize}
     \item Log pedals, motor, pumps status and all occurred errors
     \item Updates motors target torque based on calculated electronic differential state (torque vectoring), power limitation and acceleration pedal position
-    \item Control pumps power based on motors temperature and current target torque
+    \item Control pumps power based on motors temperature and a current target torque
     \item Subsystems connection loss procedures
     \item (Emergency) shutdown
     \item Read pedals, BMS, LV BMS and motors status.
 \end{itemize}
 
 
-\section{Overview of experimental setup}
-Having not sufficient financial support enforced many compromises on design which I did not have direct influence on. The decision was made that will be running in low voltage - high current setup so we could use cost efficient lithium-ion batteries. 
-Although theoretically possible cabling and connector sizing was a bit overwhelming for responsible teams.
-
-In our final setup we used:
-\begin{itemize}
-    \item Two EMRAX228 motors which nominal power of about 50kW (when liquid cooled)
-    \item Two emDrive500 controllers capable full usage of AM motors
-    \item Arduinos with CAN shields to act as intelligent sensors/controllers
-    \item Two \todo{which pump?} pumps for cooling purposes
-    \item National Instruments' cRIO 9033 as a main control unit
-\end{itemize}
-
-This result in system which in simplified manner has been presented in figure \todo{figure ref}.
-
-\todo{figure}
-
-As shown all the communication with master control unit is based on CAN bus. 
-
-
-
-
-
-
-All small subsystems are based on Arduino evaluation boards.
-
-
 \section{Pedals sensor}
-System to measure pedals and steering wheel position is based on Arduino evaluation board. Which is a simple evaluation setup build upon Atmel ATmega8 with $16MHz$ oscillator.
+A System to measure pedals and steering wheel position is based on Arduino evaluation board. Which is a simple evaluation setup build upon Atmel ATmega8 with $16MHz$ oscillator.
 
-Now considering the sampling rate of this sub-module it has been programmed to use prescaler for A/D converter with value of 128. Referring to datasheet basic conversion takes 13 clock cycles so we should except sampling rate of about $16MHz/128/13 = 9615Hz = 104µs$ \cite{Atmega8}.
+Now considering the sampling rate of this sub-module it has been programmed to use prescaler for A/D converter with a value of 128. Referring to datasheet basic conversion takes 13 clock cycles so we should except sampling rate of about $16MHz/128/13 = 9615Hz = 104µs$ \cite{Atmega8}.
 
-However, in electric car there is a lot of electromagnetic noise which needs to be addressed. To reduce impact of noise which was significant in first approach, code was modified to calculate average of 10 successive samples efficiently reducing sampling rate to $1,04ms$.
+However, in an electric car, there is a considerable electromagnetic noise which needs to be addressed. To reduce the impact of noise which was significant in the first approach, the code was modified to calculate an average of 10 successive samples efficiently reducing the rate to $1,04ms$.
 
 Considering the fact that ATmega8 consist of just one analogue-decimal converter with multiplexed input the measurement takes approximately $1,04ms * number of sensors$ \cite{Atmega8}.
-To satisfy the safety requirements we needed to use two offset sensors for each pedal (accelerator, brake) and one for steering wheel. In consequence each measurement takes at least $1,04ms * 5 = 5,2ms$.
+To satisfy the safety requirements we needed to use two offset sensors for each pedal (accelerator, brake) and one for the steering wheel. In consequence each measurement takes at least $1,04ms * 5 = 5,2ms$.
 
 This system sense all the information which is:
 \begin{itemize}
@@ -114,15 +184,15 @@ This system sense all the information which is:
     \item pedals, steering wheel over-travel, under-travel and connection loss errors
 \end{itemize}
 
-After the measurement the information is sent through CAN bus with baud rate of 500kbit/s (used CAN module was not capable to work with higher baud rates). Pedals position although being read on 10 bits is averaged and only 8 significant bits are sent. We assumed that 256 quantization steps is enough in this case. It allowed us shorten CAN frame to consist only 4 bytes of data.
-Now considering timing, the CAN frame (\todo{CAN frame graphic (wiki like)}) consist of 44 basic bits plus 4 bytes of data in our case. The total time of sending/receiving would be therefore $\frac{76}{500kbit/s} = 152us$.
+After the measurement, the information is sent through CAN bus with a baud rate of 500kbit/s (used CAN module was not capable to work with higher baud rates). Pedals position although being read on 10 bits is averaged and only 8 significant bits are sent. We assumed that 256 quantization steps are sufficient in this case. It allowed us to shorten CAN frame to consist of only 4 bytes of data.
+Now considering timing, the CAN frame (\todo{CAN frame graphic (wiki like)}) consists of 44 basic bits plus 4 bytes of data in our case. The total time of sending/receiving would be therefore $\frac{76}{500kbit/s} = 152us$.
 
-Assuming no further improvements we should expect the pedals sub-systems is capable of sending the pedals, steering wheel position in time interval of about $5,2ms$\label{pedal_ideal_time} in normal operation.
-Additionally, if any of the above mentioned errors occurred the second CAN frame is sent containing two bytes with bitwise encoded errors extending the expected interval into $~5,3ms$.
+Assuming no further improvements we should expect the pedals sub-systems is capable of sending the pedals, steering wheel position in a time interval of about $5,2ms$\label{pedal_ideal_time} in normal operation.
+Additionally, if any of the above-mentioned errors occurred the second CAN frame is sent containing two bytes with bitwise encoded errors extending the expected interval into $~5,3ms$.
 
 \section{Pump control}
-In our car we have used \todo{which pump} pumps, which can be controlled by signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with low-pass filter (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}).
-The subsystem acts simply by controlling pulse width based on the value received by CAN message from master control unit. It also provide basic emergency behaviour in the manner that if no message was sensed over one second the pumps are turned on to work with full power.
+In our car, we have used \todo{which pump} pumps, which can be controlled by a signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with a low-pass filter (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}).
+The subsystem acts simply by controlling pulse width based on the value received by CAN message from the master control unit. It also provides basic emergency behaviour in the manner that if no message was sensed over one second the pumps are turned on to work with full power.
 
 
 
@@ -130,11 +200,11 @@ The subsystem acts simply by controlling pulse width based on the value received
 
 
 \section{Implementation of electrical differential based on steering angle}\label{diff_meth}
-In my implementation I have enriched calculations explained in \ref{diff_calc}. Starting with the steering wheel, the sensor output in normalised to the measured minimum and maximum steering wheel angles ($\pm123\deg$) so the meaningful value can be shown in remote control panel as well as saved in logs. 
+In my implementation I have enriched calculations explained in \ref{diff_calc}. Starting with the steering wheel, the sensor output is normalised to the measured minimum and maximum steering wheel angles ($\pm123\deg$) so the meaningful value can be shown in remote control panel as well as saved in logs. 
 Then since it is linearly proportional it is simply converted to steering angle ($\pm35\deg$). To prevent any miss usage all the values are coerced on the go to be within the ranges.
 
-Having commanded output power (in percentage) basic differential functionality could be obtained just by multiplying it with maximum allowed/available torque and proportion on per wheel base. However, it would start failing for power close to $100\% $, although total torque will remain under limit, the outer wheel can go above limit by up to ($20\% $).
-This situation would be especially dangerous if the maximum torque per wheel base start to would saturate. In this case the differential would gradually stop to function effectively pushing the car out of desired curve.
+Having commanded output power (in percentage) basic differential functionality could be obtained just by multiplying it with a maximum allowed/available torque and proportion on per wheel base. However, it would start failing for power close to $100\% $, although total torque will remain under the limit, the outer wheel can go above the limit by up to ($20\% $).
+This situation would be especially dangerous if the maximum torque per wheel base would start to saturate. In this case the differential would gradually stop to function effectively pushing the car out of the desired curve.
 To avoid this miss-behaviour I added the code to check if after previous calculation any of the wheels is about to be set to more than maximum torque and scale both of them accordingly.
 \begin{equation}\label{diff_saf}
     \tau_{left,right} = \begin{cases}
@@ -151,9 +221,9 @@ Where:
     \item[$m(P,\gamma{left,right})$] $= P * max(\gamma_{left},\gamma_{right})$
 \end{description}
 
-\section{Regenerative Breaking}
-As mentioned in theory chapter (\ref{regenerative_theory_section}) the regenerative breaking cannot be used in low speeds. Normally this problem would be solved by varying the breaking force between regenerative and friction breaks. However, the car design did not take into the account possibility to electrically control the friction breaks. So I implemented an alternative solution taking into account this technical obstacle and comfort of the driver.
-Considering regenerative breaking as negative torque system which I have implemented can be expressed by equation \ref{reg_break_eq}.
+\section{Regenerative braking}
+As mentioned in theory chapter (\ref{regenerative_theory_section}) the regenerative braking cannot be used in low speeds. Normally this problem would be solved by varying the braking force between regenerative and friction breaks. However, the car design did not take into the account possibility to electrically control the friction breaks. So I implemented an alternative solution taking into account this technical obstacle and comfort of the driver.
+Considering regenerative braking as negative torque system which I have implemented can be expressed by equation \ref{reg_break_eq}.
 
 
 \begin{equation*}
@@ -172,16 +242,16 @@ Where:
     \item[$tau$] percentage of used torque (in reference to maximum value)
 \end{description}
 
-It follows the simple idea to use variable portion of pedal displacement for regenerative breaking based on speed.
-When the user presses acceleration pedal in stationary vehicle the whole available scale is used to control torque giving expected instant response. After reaching $10km/h$ the pedal  displacement used for regenerative breaking increases gradually to reach $15\%$ while travelling with speed equal or higher than $20km/h$.
+It follows the simple idea to use variable portion of pedal displacement for regenerative braking based on speed.
+When the user presses acceleration pedal in stationary vehicle the whole available scale is used to control torque giving expected instant response. After reaching $10km/h$ the pedal  displacement used for regenerative braking increases gradually to reach $15\%$ while travelling with speed equal or higher than $20km/h$.
 What else is worth to mention is that as a result for the pedal displacement from $0-15\%$ we should expect the car to act as it would be controlled in speed mode.\label{speed_mode} The characteristic would be firstly saturated by low torque however within enough power to make the car accelerate we should be able to observe linear correlation between pedal displacement and speed.
 To summarise the expected idealised correlation between torque, pedal displacement and speed has been shown in figure \ref{regen_ideal}.
 
 \begin{figure}[h]
     \centering
-           \includegraphics[height=5.8cm]{figures/regen_ideal}
-            \label{regen_ideal}
-        \caption{Regenerative breaking / torque control}
+        \includegraphics[height=5.8cm]{figures/regen_ideal}
+        \caption{Regenerative braking / torque control}
+        \label{regen_ideal}
 \end{figure}
 
 
