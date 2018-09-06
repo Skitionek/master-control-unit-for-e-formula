@@ -19,10 +19,40 @@
 
 
 \section{Background}
+Coming from the field of telecommunication, through microwave engineering and electrical systems in satellites in last years I have focused on electric cars. After taking classes on electric vehicles I had my first practical experience by correcting the wire harness of converted to electric off-road car. Afterwards, I worked on electric conversion of car towards racing application.
 
+Both systems, however, took an approach to use already designed solutions and did not require additional control units.
 
+In by this thesis I got engaged into more ambitious project and took responsibility for main control unit.
 
-% \section{CAN}
+In the following sections I will give brief insight into technical topics relevant to the final implementation.
+
+\section{CAN}
+Majority of communication from/to central control unit is realised based on Control Area Network (CAN) common communication protocol used mostly in automotive applications. It has been used within so far the most common version of psychical layer described in ISO11898-2 and popularly called high speed CAN.
+In this standard both ends of the bus needs to be terminated to avoid signal reflections and the speed is reaching up to 1Mbit/s.
+
+\paragraph{CAN Frame}
+In this protocol each arbitrary data needs to be encapsulated into frames, each capable of transmitting variable number of bytes (up to 8 per frame).
+Can frames consist of following fields:
+\begin{table}[H]
+\begin{tabular}{|p{0.2\textwidth}|p{0.13\textwidth}|p{0.5\textwidth}|}
+Start-of-frame & 1 & Denotes the start of frame transmission \\
+Identifier & 11 & A (unique) identifier which also represents the message priority \\
+Remote transmission request & 1 & Must be dominant (0) for data frames and recessive for remote request frames (see Remote Frame, below) \\
+Identifier\newline extension bit & 1 & Must be dominant (0) for base frame format with 11-bit identifiers \\
+Reserved bit & 1 & Reserved bit. Must be dominant (0), but accepted as either dominant or recessive. \\
+Data length code & 4 & Number of bytes of data (0–8 bytes)[a] \\
+Data field & 0–64\newline (0-8 bytes) & Data to be transmitted (length in bytes dictated by DLC field) \\
+CRC & 15 & Cyclic redundancy check \\
+CRC\newline delimiter & 1 & Must be recessive \\
+ACK\newline slot & 1 & Transmitter sends recessive and any receiver can assert a dominant (0) \\
+ACK\newline delimiter & 1 & Must be recessive \\
+End-of-frame & 7 & Must be recessive\\
+\end{tabular}
+\end{table}
+
+Since CAN version 2.0 messages can be sent with 11 or 29 bit IDs. however, for simplicity I will just consider usage of 11 bit identifiers (they differ just by the number of bits in this field).
+
 % \subsection{CANOpen}
 % \section{Steering}
 % \section{Torque vectoring / load sharing}

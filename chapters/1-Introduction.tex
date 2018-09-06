@@ -14,23 +14,41 @@
 
 \chapter{Introduction}
 
-An invention of the electric car has closely followed the time when the first electric motor has been built. The first construction is dated as early as the year 1837 with the golden age of electric cars in the 1920s. Since then the market was suddenly overtaken by the vehicles with internal combustion engines, however increasing environmental awareness and technical advancement lead us to reconcile usage of electric motors. 
-In the last decade we could observe steady growth in hybrid and full electric constructions, so now a day the majority of car producers has in offer electric vehicles (EVs).
+An invention of the electric car has closely followed the time when the first electric motor has been built. The first construction is dated as early as the year 1837 with the golden age of electric cars in the 1920s. Since then the market was suddenly overtaken by the vehicles with internal combustion engines. However, gas shortage in 1960-70s and increasing environmental awareness lead us to reconcile usage of electric motors.
 
-\todo{
-    Source and figure 
-    1820\textbackslash\_\_\_\_\_\_\_\_\_\_\_/1920\textbackslash\_\_\_\_\_\_\_\_\_\_/2020?
-}
+Ahead of its times, at the 1997, Toyota introduced first mass produced hybrid construction. Although considered successful the idea has not been followed by other manufactures until the year 2010. Since this time manufactures sold over 1.9 million of fully electric cars, not to mention hybrid vehicles. 
 
-From the engineering point of view, it is an exciting new field which needs to be explored 
+This recent changes could be also observed in the academia and associated events especially in student competition. Taking for instance "Formula Student", annual competition of cars build buy universities students. It has been organised since 1981 and in the time it was mainly challenge for mechanical engineers, however in 2008 new category was introduced making place also for electric cars.
+After 4 years of development the gap between electric and internal combustion (IC) engine cars was so narrow that the organisers decided that cars should compete in the same category.
+
+As a group of passionate students we decided to pick up the challenge of building an electric racing car. From the engineering point of view it is really exciting field/project. The automotive industry of electric cars is still in the young stage so variety of constructions is not fully explored and none of them can be considered as absolutely superior.
+For instance within electric motors we are not longer restricted by having only one engine (it is not feasible for IC cars to have more). One can consider different strategies.
+\begin{description}
+    \item[One motor] no difference to IC based car - mechanical differential needs to be used
+    \item[Two motors on the same axis] drive wheels torque/speed can be accurately controlled, no need of mechanical differential, accurate traction control can be implemented without usage of traction breaks (reduced energy loss), motors can be embedded into the wheels
+    \item[Two motors on separate axes] 4 wheel drive without need of drive shaft and main differential
+    \item[Four motors] four wheel drive with accurate control of each wheel, no need for mechanical differentials and motors can be embedded into the wheels
+\end{description}
+Although usage of higher number of motors gives better controlling ability it comes within the cost of increased complexity. Once simple throttle control needs additional computation to estimate desired torque/speed for each wheel of the vehicle.
+
+Moreover, what is making an EV special is the possibility of changing back a kinetic energy back into electricity. So in theory slowing down the vehicle and accelerating it back can be done with the losses only for motor/s efficiencies (motor and generator). In opposite to IC where all the energy used for breaking is exchanged into heat.
+
+% In the last decade we could observe steady growth in hybrid and full electric constructions, so now a day the majority of car producers has in offer electric vehicles (EVs).
+
+% \todo{
+%     Source and figure 
+%     1820\textbackslash\_\_\_\_\_\_\_\_\_\_\_/1920\textbackslash\_\_\_\_\_\_\_\_\_\_/2020?
+% }
+
+% From the engineering point of view, it is an exciting new field which needs to be explored 
 
 
-Now a day we are observing a great expand in electric cars industry. The idea of fully electric cars for mass usage, which been moved aside due to technical difficulties for over 100 years hits the market again. This movement stimulates research processes all around the world as the new architecture allows for optimisation which was impossible or not feasible for cars with a combustion engine.
+% Now a day we are observing a great expand in electric cars industry. The idea of fully electric cars for mass usage, which been moved aside due to technical difficulties for over 100 years hits the market again. This movement stimulates research processes all around the world as the new architecture allows for optimisation which was impossible or not feasible for cars with a combustion engine.
 
 
-Especially, an interesting configuration is whenever the vehicle is using two or more electric engines on per wheel basis. In this situation, a well known mechanical differential system can't longer be deployed resulting in reduced traction on the curves. To overcome this issue each motor has to be controlled independently and with precision by the onboard computer unit.
+% Especially, an interesting configuration is whenever the vehicle is using two or more electric engines on per wheel basis. In this situation, a well known mechanical differential system can't longer be deployed resulting in reduced traction on the curves. To overcome this issue each motor has to be controlled independently and with precision by the onboard computer unit.
 
-Project description:     
-The goal of this project is to develop, implement and test the central control unit of an electric vehicle with special emphasis on electronic differential systems. Particularly, implementation of load sharing and torque vectoring. Project this however also covers the communication with motor drivers, BMS and all the other peripherals.
+% Project description:     
+% The goal of this project is to develop, implement and test the central control unit of an electric vehicle with special emphasis on electronic differential systems. Particularly, implementation of load sharing and torque vectoring. Project this however also covers the communication with motor drivers, BMS and all the other peripherals.
 
-\todo{Used setup!}
+% \todo{Used setup!}
