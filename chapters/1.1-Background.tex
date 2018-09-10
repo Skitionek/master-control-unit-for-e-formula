@@ -27,33 +27,107 @@ In by this thesis I got engaged into more ambitious project and took responsibil
 
 In the following sections I will give brief insight into technical topics relevant to the final implementation.
 
-\section{CAN}
+\subsection{CAN}
 Majority of communication from/to central control unit is realised based on Control Area Network (CAN) common communication protocol used mostly in automotive applications. It has been used within so far the most common version of psychical layer described in ISO11898-2 and popularly called high speed CAN.
+
 In this standard both ends of the bus needs to be terminated to avoid signal reflections and the speed is reaching up to 1Mbit/s.
 
 \paragraph{CAN Frame}
 In this protocol each arbitrary data needs to be encapsulated into frames, each capable of transmitting variable number of bytes (up to 8 per frame).
 Can frames consist of following fields:
 \begin{table}[H]
-\begin{tabular}{|p{0.2\textwidth}|p{0.13\textwidth}|p{0.5\textwidth}|}
-Start-of-frame & 1 & Denotes the start of frame transmission \\
-Identifier & 11 & A (unique) identifier which also represents the message priority \\
-Remote transmission request & 1 & Must be dominant (0) for data frames and recessive for remote request frames (see Remote Frame, below) \\
-Identifier\newline extension bit & 1 & Must be dominant (0) for base frame format with 11-bit identifiers \\
-Reserved bit & 1 & Reserved bit. Must be dominant (0), but accepted as either dominant or recessive. \\
-Data length code & 4 & Number of bytes of data (0–8 bytes)[a] \\
-Data field & 0–64\newline (0-8 bytes) & Data to be transmitted (length in bytes dictated by DLC field) \\
-CRC & 15 & Cyclic redundancy check \\
-CRC\newline delimiter & 1 & Must be recessive \\
-ACK\newline slot & 1 & Transmitter sends recessive and any receiver can assert a dominant (0) \\
-ACK\newline delimiter & 1 & Must be recessive \\
-End-of-frame & 7 & Must be recessive\\
+\begin{tabular}{|p{0.2\textwidth}|p{0.13\textwidth}|p{0.58\textwidth}|}
+\hline
+\textbf{Filed} &\centering \textbf{Number of bits} &\textbf{Description} \\
+\hline
+Start-of-frame &\centering 1 & Denotes the start of frame transmission \\
+\hline
+Identifier &\centering 11 & A (unique) identifier which also represents the message priority \\
+\hline
+Remote transmission request &\centering 1 & Must be dominant for data frames and recessive for remote request frames \\
+\hline
+Identifier\newline extension bit &\centering 1 & Must be dominant for base frame format with 11-bit identifiers \\
+\hline
+Reserved bit &\centering 1 & Reserved bit. \\
+\hline
+Data length code &\centering 4 & Number of bytes of data (0–8 bytes) \\
+\hline
+Data field &\centering 0–64\newline (0-8 bytes) & Data to be transmitted\newline (length in bytes dictated by DLC field)\\
+\hline
+CRC &\centering 15 & Cyclic redundancy check\\
+\hline
+CRC delimiter &\centering 1 & Must be recessive\\
+\hline
+ACK slot &\centering 1 & Transmitter sends recessive and any receiver can assert a dominant\\
+\hline
+ACK delimiter &\centering 1 & Must be recessive\\
+\hline
+End-of-frame &\centering 7 & Must be recessive\\
+\hline
 \end{tabular}
-\end{table}
+\end{table}\todo{Source!}\footnote{Since CAN version 2.0 messages can be sent with 11 or 29 bit IDs. however, for simplicity I will just consider usage of 11 bit identifiers (they differ just by the number of bits in this field).}
 
-Since CAN version 2.0 messages can be sent with 11 or 29 bit IDs. however, for simplicity I will just consider usage of 11 bit identifiers (they differ just by the number of bits in this field).
+It is multimaster asynchronous protocol and for proper operation requires each device to monitor the bus all the time (also during sending). So due to the fact that 0 is dominant, whenever two messages starts to sent in the same time the one which first sends 1 but is reading 0 stops sending immediately. Effectively, prioritising messages with lower IDs.
 
-% \subsection{CANOpen}
+What is also worth to point out is that each CAN frame introduces protocol overhead of about 44bits per frame \footnote{Although, caring information message ID were included into message overhead calculation as in majority of cases it could be reduced to just a few bits, on the other hand we might expect additional bits due to bit stuffing(for each 4 bits with the same sign additional one is added)}.
+
+\subsubsection{CANOpen}
+It is an higher level of abstraction over the CAN (capable of working with variety of versions). The objective of this additional layer is to standardise format of the data as the original CAN protocol gives complete flexibility in the matter. 
+In CANOpen message IDs consist of first 4 bits being a function ID and 7 bits representing device code (node ID). In this way the limitations was twisted around, in basic CAN network 2048 messages can be recognised, where CANOpen focuses on per device ID therefore changing limitation to 127 devices on the bus \footnote{on 7bits 128 devices could have own ID, however, ID equal to zero is used as broadcast channel}.
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{|p{0.28\textwidth}|p{0.3\textwidth}|p{0.3\textwidth}|}
+        \hline
+        \textbf{Communication object} & \textbf{COB-ID(s) hex} & \textbf{Slave nodes} \\
+        \hline
+        NMT node control & 000 & Receive only \\
+        \hline
+        Sync & 080 & Receive only \\
+        \hline
+        Emergency & 080 + NodeID & Transmit \\
+        \hline
+        TimeStamp & 100 & Receive only \\
+        \hline
+        PDO & 180 + NodeID & Transmit PDO1 \\
+            & 200 + NodeID & Receive PDO1 \\
+            & 280 + NodeID & Transmit PDO2 \\
+            & 300 + NodeID & Receive PDO2 \\
+            & 380 + NodeID & Transmit PDO3 \\
+            & 400 + NodeID & Receive PDO3 \\
+            & 480 + NodeID & Transmit PDO4 \\
+            & 500 + NodeID & Receive PDO4 \\
+        \hline
+        SDO & 580 + NodeID & Transmit \\
+            & 600 + NodeID & Receive \\
+        \hline
+        NMT node monitoring & 700 + NodeID & Transmit \\
+        \hline
+        LSS & 7E4 & Transmit \\
+            & 7E5 & Receive \\
+        \hline
+    \end{tabular}
+    \caption{Caption}
+    \label{tab:my_label}
+\end{table}\todo{Source!}
+
+Addressing each device allows a variety of possibilities. It has been a base to establish protocol allowing to read/write data to device.
+This functionality has been called "servicing data object" (SDO) and follows hierarchical addressing where at first device is chosen then certain parameter and possibly its sub-index. Although, it introduces an overhead, for basic parameters setting most likely there is no need for especially high throughput. 
+
+In case that overhead is not tolerable CANOpen allows to map data in dictionary into "process dictionary object" (PDO). These are messages acting in the same way as raw CAN, being at the same time easily adjustable and having set of triggering methods.
+Tigers included into this specification are: value change; timer overflow; device internal event; respond to request; respond to synchronisation message (SYNC).
+
+\begin{wrapfigure}{L}{0.33\textwidth}
+    \begin{center}
+       \includegraphics[width=0.3\textwidth]{figures/CANOpen_NMT}
+    \end{center}
+    \caption{Device states described in CANOpen specification}
+    \label{fig:CANOpen NMT}
+\end{wrapfigure}
+Beside exchange of data CANOpen protocol describes a way to control basic device states. By messages referred as "Network Management" (NMT) one can read device state and send commands to change it. The states and all possible transitions are shown in figure \ref{fig:CANOpen NMT}.
+
+
+
 % \section{Steering}
 % \section{Torque vectoring / load sharing}
 % \chapter{Existing solutions/ compare to IC vehicles}
