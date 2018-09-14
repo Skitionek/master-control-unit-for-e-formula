@@ -19,21 +19,23 @@
 
 
 \section{Background}
-Coming from the field of telecommunication, through microwave engineering and electrical systems in satellites in last years I have focused on electric cars. After taking classes on electric vehicles I had my first practical experience by correcting the wire harness of converted to electric off-road car. Afterwards, I worked on electric conversion of car towards racing application.
+Coming from the field of telecommunication, through microwave engineering and electrical systems in satellites in last years I have focused on electric cars. After taking classes on electric vehicles I had my first practical experience by correcting the wire harness of converted to an electric off-road car. Afterwards, I worked on the electric conversion of the car towards the racing application.
 
 Both systems, however, took an approach to use already designed solutions and did not require additional control units.
 
-In by this thesis I got engaged into more ambitious project and took responsibility for main control unit.
+In by this thesis, I got engaged in a more ambitious project and took responsibility for the main control unit.
 
-In the following sections I will give brief insight into technical topics relevant to the final implementation.
+In the following sections, I will give a brief insight into technical topics relevant to the final implementation.
 
 \subsection{CAN}
-Majority of communication from/to central control unit is realised based on Control Area Network (CAN) common communication protocol used mostly in automotive applications. It has been used within so far the most common version of psychical layer described in ISO11898-2 and popularly called high speed CAN.
+CAN protocol was first used in the car 27 years ago\ref{CAN_merc} to become international automotive standard just two years later in 1993.\ref{CAN_1993}
 
-In this standard both ends of the bus needs to be terminated to avoid signal reflections and the speed is reaching up to 1Mbit/s.
+Following precursors in my implementation, a majority of communication from/to central control unit is realised based on Control Area Network (CAN) common communication protocol used mostly in automotive applications. It has been used within so far the most common version of psychical layer described in ISO11898-2 and popularly called high speed CAN.
+
+In this standard, both ends of the bus need to be terminated to avoid signal reflections and the speed is reaching up to 1Mbit/s.
 
 \paragraph{CAN Frame}
-In this protocol each arbitrary data needs to be encapsulated into frames, each capable of transmitting variable number of bytes (up to 8 per frame).
+In this protocol each arbitrary data needs to be encapsulated into frames, each capable of transmitting a variable number of bytes (up to 8 per frame).
 Can frames consist of following fields:
 \begin{table}[H]
 \begin{tabular}{|p{0.2\textwidth}|p{0.13\textwidth}|p{0.58\textwidth}|}
@@ -67,13 +69,14 @@ End-of-frame &\centering 7 & Must be recessive\\
 \end{tabular}
 \end{table}\todo{Source!}\footnote{Since CAN version 2.0 messages can be sent with 11 or 29 bit IDs. however, for simplicity I will just consider usage of 11 bit identifiers (they differ just by the number of bits in this field).}
 
-It is multimaster asynchronous protocol and for proper operation requires each device to monitor the bus all the time (also during sending). So due to the fact that 0 is dominant, whenever two messages starts to sent in the same time the one which first sends 1 but is reading 0 stops sending immediately. Effectively, prioritising messages with lower IDs.
+It is multi-master asynchronous protocol and for proper operation requires each device to monitor the bus all the time (also during sending). So due to the fact that 0 is dominant, whenever two messages start to send at the same time the one which first sends 1 but is reading 0 stops sending immediately (non-destructive bit-wise arbitration). Effectively, prioritising messages with lower IDs.
 
-What is also worth to point out is that each CAN frame introduces protocol overhead of about 44bits per frame \footnote{Although, caring information message ID were included into message overhead calculation as in majority of cases it could be reduced to just a few bits, on the other hand we might expect additional bits due to bit stuffing(for each 4 bits with the same sign additional one is added)}.
+What is also worth to point out is that each CAN frame introduces protocol overhead of about 44bits per frame \footnote{Although, caring information message ID was included into message overhead calculation as in the majority of cases it could be reduced to just a few bits, on the other hand, we might expect additional bits due to bit stuffing(for each 4 bits with the same sign additional one is added)\ref{CAN_stuffing}}.
 
 \subsubsection{CANOpen}
-It is an higher level of abstraction over the CAN (capable of working with variety of versions). The objective of this additional layer is to standardise format of the data as the original CAN protocol gives complete flexibility in the matter. 
-In CANOpen message IDs consist of first 4 bits being a function ID and 7 bits representing device code (node ID). In this way the limitations was twisted around, in basic CAN network 2048 messages can be recognised, where CANOpen focuses on per device ID therefore changing limitation to 127 devices on the bus \footnote{on 7bits 128 devices could have own ID, however, ID equal to zero is used as broadcast channel}.
+Just a two years after of CAN becoming a standard Bosh proposed a very first version of CANOpen.\ref{CANOpen_history}
+Which is a higher level of abstraction over the CAN (capable of working with a variety of versions). The objective of this additional layer is to standardise the format of the data as the original CAN protocol gives complete flexibility in the matter. 
+In CANOpen message IDs consist of first 4 bits being a function ID and 7 bits representing device code (node ID). In this way, the limitations were twisted around, in basic CAN network 2048 messages can be recognised, where CANOpen focuses on per device ID, therefore, changing limitation to 127 devices on the bus \footnote{on 7bits 128 devices could have own ID, however, ID equal to zero is used as broadcast channel}.
 
 \begin{table}[]
     \centering
@@ -109,26 +112,44 @@ In CANOpen message IDs consist of first 4 bits being a function ID and 7 bits re
     \end{tabular}
     \caption{Caption}
     \label{tab:my_label}
-\end{table}\todo{Source!}
+\end{table}\ref{CANOpen_microcontrol}
 
-Addressing each device allows a variety of possibilities. It has been a base to establish protocol allowing to read/write data to device.
+Addressing each device allows a variety of possibilities. It has been a base to establish protocol allowing to read/write data to a device.
 This functionality has been called "servicing data object" (SDO) and follows hierarchical addressing where at first device is chosen then certain parameter and possibly its sub-index. Although, it introduces an overhead, for basic parameters setting most likely there is no need for especially high throughput. 
 
-In case that overhead is not tolerable CANOpen allows to map data in dictionary into "process dictionary object" (PDO). These are messages acting in the same way as raw CAN, being at the same time easily adjustable and having set of triggering methods.
-Tigers included into this specification are: value change; timer overflow; device internal event; respond to request; respond to synchronisation message (SYNC).
+In case that overhead is not tolerable CANOpen allows to map data in the dictionary into "process dictionary object" (PDO). These are messages acting in the same way as raw CAN, being at the same time easily adjustable and having a set of triggering methods.
+Tigers included in this specification are:
+\begin{itemize}
+	\item value change
+	\item timer overflow
+	\item device internal event
+	\item respond to a request; respond to synchronisation message (SYNC)
+\end{itemize}
 
 \begin{wrapfigure}{L}{0.33\textwidth}
+    \vspace{-0.9cm}
     \begin{center}
        \includegraphics[width=0.3\textwidth]{figures/CANOpen_NMT}
     \end{center}
+    \vspace{-0.5cm}
     \caption{Device states described in CANOpen specification}
     \label{fig:CANOpen NMT}
 \end{wrapfigure}
 Beside exchange of data CANOpen protocol describes a way to control basic device states. By messages referred as "Network Management" (NMT) one can read device state and send commands to change it. The states and all possible transitions are shown in figure \ref{fig:CANOpen NMT}.
 
+As one can notice to states are restricted to ones important for communication and parameters setting. After the device is on, booting sequence can be started then in a pre-operational state all configuration can be made to finally turn it into operational mode. For instance in connecting to a motor controller, firstly we check communication then turn on pre-charge circuit during boot sequence then setup all necessary parameters (encoder, current limitation etc.) subsequently turning the control loop on.
+
+This is just cover general states but in more complex applications clearly, there are more states to address, however, in this case, there is nothing stopping us from using certain objects in the dictionary to control sub-states.
+
+Last but not least, there are 4 more functions cover: Emergency (EMC) - responsible for asynchronous communication of errors, previously mentioned SYNC - to periodically request device state, time stamp - to synchronise devices clock and layer settings services (LSS) - to automatically identify multiple devices on the bus.
+
+All these briefly described functions, collectively provide powerful abstraction over the CAN network standardising way it is used.
+
+\cite{CAN_CIA,CANOpen_NIKHEF,CANOpen_solutions,CANOpen_microcontrol}
+\\ \\ \\ \\ \\ \\ 
+
+% \section{Steering - torque vectoring and load sharing}
 
 
-% \section{Steering}
-% \section{Torque vectoring / load sharing}
 % \chapter{Existing solutions/ compare to IC vehicles}
 % Literature review on recent developments within the topic and techniques used in combustion engine cars

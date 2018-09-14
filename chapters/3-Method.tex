@@ -66,7 +66,7 @@ From the early beginning, I have been developing the code of master control unit
 
 Most simple classification of subsystems can be based on communication protocol being used. 
 
-\section{Communication protocols}
+\subsection{Communication protocols}
 
 \subsubsection{CAN integration}
 To start with I had to implement a CAN library which would let me service messages from the code running on the real-time processor. I did it based on one of the provided examples, however, to meet my needs it required some ground modifications.
@@ -118,6 +118,7 @@ However, as it came to controlling two motors simultaneously conflicting message
 So for the two motor configuration, I had to implement a workaround by using slower and not providing all the functionality SDO protocol.
 Usage of this protocol caused a drastic drop in channel throughput considering for instance reading of device status:
 \begin{table}[H]
+\centering
 \begin{tabular}{|l|c|}
     \hline
     Data & Data size [byte] \\
@@ -135,9 +136,10 @@ Usage of this protocol caused a drastic drop in channel throughput considering f
     \hfill Sum & 19 \\
     \hline
 \end{tabular}
+\caption{Motor controller status component sizing}
 \end{table}
 
-As each PDO message can contain up to 8 bytes aforementioned list of parameters would need to be divided into 3 CAN frames and as an result $46bits*3+19bytes+\epsilon = 290 bits +\epsilon$  \hspace{1cm}\footnote{\label{foot:eps}$\epsilon$ has been used to represent stuffed bits} needs to be send. On the other hand sending the same data with SDO protocol requires request-respond schema for each value so $46bits*18 + 19bytes + 9*4bytes + \epsilon = 1268 bits + \epsilon$ \hspace{1cm} \ref{foot:eps} needs to be send.
+As each PDO message can contain up to 8 bytes aforementioned list of parameters would need to be divided into 3 CAN frames and as an result $46bits*3+19bytes+\epsilon = 290 bits +\epsilon$  \hspace{0.2cm}\footnote{\label{foot:eps}$\epsilon$ has been used to represent stuffed bits} needs to be send. On the other hand sending the same data with SDO protocol requires request-respond schema for each value so $46bits*18 + 19bytes + 9*4bytes + \epsilon = 1268 bits + \epsilon$ \hspace{0.2cm} \ref{foot:eps} needs to be send.
 
 \begin{figure}[h]
     \centering
@@ -150,19 +152,31 @@ As each PDO message can contain up to 8 bytes aforementioned list of parameters 
 Furthermore, also the target torque off motor controllers needs to be adjusted SDO messages. In this case performance drawback is even more visible, if the PDO protocol could be used torque values could be sent together within one CAN frame ($46bits+4bytes=78 bits$), however, within SDO 4 CAN frames needs to be sent ($46bits*4+4bytes+4bytes*2=280bits$).
 
 \subsection{Device operation states}
-Although, during operation everything is event based the whole application itself can be considered a state machine where normal operation is just one of the states.
 
-\todo{fig Init->boot-up seq->operational->exit}
+\begin{wrapfigure}{R}{0.43\textwidth}
+    \vspace{-20pt}
+    \begin{center}
+        \includegraphics[width=0.4\textwidth]{figures/System_overview}
+        \label{fig:sys_over}
+        \caption{Control unit\newline states overview}
+    \end{center}
+    \vspace{-20pt}
+\end{wrapfigure}
 
-\subsection{Operational state}
-Implemented controller provides following functionality:
+Implemented control unit in practice consist of few nested state machines. The most general consist of just 3 states responsible for controller booting, operational and shutdown.
+In booting state all initial values are set and internal modules like FPGA, CAN and CANOpen are being turned on in parallel to main threads. Whenever, this phase is finished, error logger is turn on and car booting sequence begins.
+
+To start with, the dashboard is updated with batteries charge status and systems waits for power up button to be pressed. Whenever driver would command turning of the vehicle button blinks and lights up by internal LED whenever BMS would response with ready to discharge message. Then second button is required to be pressed in order to turn the traction system on (analogical interface to first button). Whenever traction system is first turned on, controller sends message to audio-visual system so the car plays loud sound alerting the surrounding to take cautions as systems are charge and it is ready to drive.
+
+In operational state many control loops runs in parallel to cover desired vehicle functionality.
 \begin{itemize}
-    \item Log pedals, motor, pumps status and all occurred errors
-    \item Updates motors target torque based on calculated electronic differential state (torque vectoring), power limitation and acceleration pedal position
-    \item Control pumps power based on motors temperature and a current target torque
-    \item Subsystems connection loss procedures
-    \item (Emergency) shutdown
-    \item Read pedals, BMS, LV BMS and motors status.
+    \item Pedals status is read, updates local pedal status and issue notification that motor controllers should be updated with new values. 
+    \item Upon notification new target torques values are calculated and send to motor controllers.
+    \item Running watchdog, if no pedals update was notified within 500ms set target torques to zero (emergency mechanism to slow the motors in case of any temporary fail of pedals sensor).
+    \item Set pumps to full power for 3s to initiate rotation, then control it accordingly to further mentioned method.\ref{pump_control}
+    \item Communicate with BMS to keep it in operational state.
+    \item Read and act upon BMS and low voltage BMS state.
+    \item Log all the information.
 \end{itemize}
 
 
@@ -190,7 +204,7 @@ Now considering timing, the CAN frame (\todo{CAN frame graphic (wiki like)}) con
 Assuming no further improvements we should expect the pedals sub-systems is capable of sending the pedals, steering wheel position in a time interval of about $5,2ms$\label{pedal_ideal_time} in normal operation.
 Additionally, if any of the above-mentioned errors occurred the second CAN frame is sent containing two bytes with bitwise encoded errors extending the expected interval into $~5,3ms$.
 
-\section{Pump control}
+\section{Pump control}\label{pump_control}
 In our car, we have used \todo{which pump} pumps, which can be controlled by a signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with a low-pass filter (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}).
 The subsystem acts simply by controlling pulse width based on the value received by CAN message from the master control unit. It also provides basic emergency behaviour in the manner that if no message was sensed over one second the pumps are turned on to work with full power.
 
