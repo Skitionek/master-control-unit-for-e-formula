@@ -19,8 +19,8 @@
 
 
 \begin{figure}[b]
-	\centering
-    	\includegraphics[width=0.8\textwidth]{figures/silverstone.jpg}
+    \centering
+        \includegraphics[width=0.8\textwidth]{figures/silverstone.jpg}
         \caption{Built car on Silverstone race circuit}
         \ref{pic:silverstone}
 \end{figure}
@@ -33,18 +33,23 @@ In our final setup we used:
     \item Two EMRAX228 motors which nominal power of about 50kW (when liquid cooled)
     \item Two emDrive500 controllers capable full usage of AM motors
     \item Arduino with CAN shields to act as intelligent sensors/controllers
-    \item Two \todo{which pumps? Iwaki direct drive pump rd-40e24-hn1v} pumps for cooling purposes
+    \item Two IWAKI direct drive pumps (RD-40E24-HN1V) pumps for cooling purposes
     % \begin{wrapfigure}
     %     \includegraphics[width=0.33\textwidth]{figures/Pump.pdf}
     % \end{wrapfigure}
     \item National Instruments' cRIO-9033 as a main control unit
 \end{itemize}
 
-This result in the system which in a simplified manner has been presented in figure \todo{figure ref}.
+This result in the system which in a simplified manner has been presented in figure \ref{fig:whole}.
 
-\todo{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics{figures/whole.pdf}
+    \caption{Architecture overview}
+    \label{fig:whole}
+\end{figure}
 
-As shown all the communication with the master control unit is based on CAN bus. 
+As shown all the communication with the master control unit is based on CAN bus (CANOpen is based on CAN bus). 
 
 
 
@@ -76,7 +81,7 @@ Especially functionality which has been missing is the ability to wait for a mes
 
 To achieve it, I have a functionality deployed on FPGA (Field Programmable Gate Array) which simply translates input/output messages into the arrays of 8x unsigned integers. Read messages are furthermore pushed into the FIFO register. In parallel, a consumer process is running which takes messages from the register set it as an output and raise an interrupt on the real-time processor to notify that data is ready to be read.
 
-Upon initiation of the device, a programme is run on the real-time processor which beside the main process spawns an additional one in the background. This one furthermore is responsible for communication with the FPGA so whenever a message arrives it services interrupt by copying it and sends the acknowledge back to FPGA so next one can be transmitted. Meanwhile, CAN frame is stored in the table indexed by its ID and two notifications are sent (for the desired frame and for the arrival of any message)\footnote{Usage of LabVIEW synchronisation primitive "Queue" further described in \todo{queue description}}.
+Upon initiation of the device, a programme is run on the real-time processor which besides the main process spawns an additional one in the background. This one furthermore is responsible for communication with the FPGA so whenever a message arrives it services interrupt by copying it and sends the acknowledge back to FPGA so next one can be transmitted. Meanwhile, CAN frame is stored in the table indexed by its ID and two notifications are sent (for the desired frame and for the arrival of any message)\footnote{Usage of LabVIEW synchronisation primitive "Queue".}% further described in \todo{queue description}}.
 
 Now depending on a place in the code read function can be called in one of three ways:
 \begin{description}[labelindent=1cm]
@@ -94,20 +99,20 @@ Now depending on a place in the code read function can be called in one of three
 For sending a message it simply pushes data to FPGA and marks it as ready to send. FPGA is constantly checking the ready to send status and whenever it becomes true sends the data.
 
 \vspace{5mm}
-\noindent Thank\todo{seriously without to!?} this architecture CAN messaging part is easy to use, read and modify.
+\noindent Thank this architecture CAN messaging part is easy to use, read and modify.
 
 \subsubsection{CANOpen}
 For the simplicity and maximum throughput although CANOpen is an abstraction layer over CAN bus an additional line has been used only for CANOpen communication. It has been used just to link two motor controllers and NI-9881 module (plugged into cRIO).
 
 For the usage, CANOpen seemed like the best choice. It provides great flexibility in the way that all parameters can be accessed the way as they would be stored in memory registry without any pre-configuration. Furthermore, if setup correctly certain number of parameters can be accessed without any protocol overhead providing maximum bus throughput.
 
-As previously mentioned in \todo{where} CANOpen abstraction consists of 6 complementary sub-protocols.
+As previously mentioned in \ref{can_subprotocol} CANOpen abstraction consists of 6 complementary sub-protocols.
 \begin{description}[labelindent=1cm]
     \item[NMT] Network management - Provides unified control over the devices state (Boot up, Pre-operational, Operational, Stopped)
     \item[SDO] Service Data Object - verbose protocol by default providing access to all the parameters of the device, it works based on two messages schema first describing which data should be sent next then in second sending actual data
     \item[PDO] Process Data Object - configurable sets of parameters to send/receive upon change or after SYNC message
-    \item[SYNC]	Synchronisation Object - issue request of device status
-    \item[TIME]	Time Stamp Object - is used to synchronise with device clock and it had no use in this project
+    \item[SYNC]    Synchronisation Object - issue request of device status
+    \item[TIME]    Time Stamp Object - is used to synchronise with device clock and it had no use in this project
     \item[EMCY] Emergency Object - asynchronously broadcast errors
 \end{description}
 
@@ -149,32 +154,31 @@ As each PDO message can contain up to 8 bytes aforementioned list of parameters 
     \todo{enrich it by missing fields}
 \end{figure}
 
-Furthermore, also the target torque off motor controllers needs to be adjusted SDO messages. In this case performance drawback is even more visible, if the PDO protocol could be used torque values could be sent together within one CAN frame ($46bits+4bytes=78 bits$), however, within SDO 4 CAN frames needs to be sent ($46bits*4+4bytes+4bytes*2=280bits$).
+Furthermore, also the target torque off motor controllers needs to be adjusted SDO messages. In this case, performance drawback is even more visible, if the PDO protocol could be used torque values could be sent together within one CAN frame ($46bits+4bytes=78 bits$), however, within SDO 4 CAN frames needs to be sent ($46bits*4+4bytes+4bytes*2=280bits$).
 
 \subsection{Device operation states}
 
 \begin{wrapfigure}{R}{0.43\textwidth}
     \vspace{-20pt}
-    \begin{center}
+    \centering
         \includegraphics[width=0.4\textwidth]{figures/System_overview}
         \label{fig:sys_over}
         \caption{Control unit\newline states overview}
-    \end{center}
     \vspace{-20pt}
 \end{wrapfigure}
 
-Implemented control unit in practice consist of few nested state machines. The most general consist of just 3 states responsible for controller booting, operational and shutdown.
-In booting state all initial values are set and internal modules like FPGA, CAN and CANOpen are being turned on in parallel to main threads. Whenever, this phase is finished, error logger is turn on and car booting sequence begins.
+The implemented control unit in practice consists of few nested state machines. The most general consist of just 3 states responsible for controller booting, operational and shutdown.
+In booting state all initial values are set and internal modules like FPGA, CAN and CANOpen are being turned on in parallel to main threads. Whenever this phase is finished, an error logger is turn on and the car booting sequence begins.
 
-To start with, the dashboard is updated with batteries charge status and systems waits for power up button to be pressed. Whenever driver would command turning of the vehicle button blinks and lights up by internal LED whenever BMS would response with ready to discharge message. Then second button is required to be pressed in order to turn the traction system on (analogical interface to first button). Whenever traction system is first turned on, controller sends message to audio-visual system so the car plays loud sound alerting the surrounding to take cautions as systems are charge and it is ready to drive.
+To start with, the dashboard is updated with batteries charge status and systems waits for power up button to be pressed. Whenever driver would command turning of the vehicle button blinks and lights up by internal LED whenever BMS would response with ready to discharge message. Then the second button is required to be pressed in order to turn the traction system on (analogical interface to the first button). Whenever the traction system is first turned on, the controller sends a message to the audio-visual system so the car plays loud sound alerting the surrounding to take cautions as systems are charge and it is ready to drive.
 
-In operational state many control loops runs in parallel to cover desired vehicle functionality.
+In the operational state, many control loops run in parallel to cover desired vehicle functionality.
 \begin{itemize}
     \item Pedals status is read, updates local pedal status and issue notification that motor controllers should be updated with new values. 
     \item Upon notification new target torques values are calculated and send to motor controllers.
-    \item Running watchdog, if no pedals update was notified within 500ms set target torques to zero (emergency mechanism to slow the motors in case of any temporary fail of pedals sensor).
+    \item Running watchdog, if no pedals update was notified within 500ms set target torques to zero (an emergency mechanism to slow the motors in case of any temporary fail of pedals sensor).
     \item Set pumps to full power for 3s to initiate rotation, then control it accordingly to further mentioned method.\ref{pump_control}
-    \item Communicate with BMS to keep it in operational state.
+    \item Communicate with BMS to keep it in an operational state.
     \item Read and act upon BMS and low voltage BMS state.
     \item Log all the information.
 \end{itemize}
@@ -199,13 +203,20 @@ This system sense all the information which is:
 \end{itemize}
 
 After the measurement, the information is sent through CAN bus with a baud rate of 500kbit/s (used CAN module was not capable to work with higher baud rates). Pedals position although being read on 10 bits is averaged and only 8 significant bits are sent. We assumed that 256 quantization steps are sufficient in this case. It allowed us to shorten CAN frame to consist of only 4 bytes of data.
-Now considering timing, the CAN frame (\todo{CAN frame graphic (wiki like)}) consists of 44 basic bits plus 4 bytes of data in our case. The total time of sending/receiving would be therefore $\frac{76}{500kbit/s} = 152us$.
+Now considering timing, the CAN frame (\ref{fig:CAN_FRAME}) consists of at least 44 basic bits plus 4 bytes of data in our case. The total time of sending/receiving would be therefore $\frac{76}{500kbit/s} = 152us$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/CAN_FRAME.png}
+    \caption{CAN frame structure \cite{CAN_stuffing}}
+    \label{fig:CAN_FRAME}
+\end{figure}
 
 Assuming no further improvements we should expect the pedals sub-systems is capable of sending the pedals, steering wheel position in a time interval of about $5,2ms$\label{pedal_ideal_time} in normal operation.
 Additionally, if any of the above-mentioned errors occurred the second CAN frame is sent containing two bytes with bitwise encoded errors extending the expected interval into $~5,3ms$.
 
 \section{Pump control}\label{pump_control}
-In our car, we have used \todo{which pump} pumps, which can be controlled by a signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with a low-pass filter (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}).
+In our car, we have used IWAKI RD-40E24-HN1V pumps, which can be controlled by a signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with a low-pass filter.% (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}). <= I was told that by mech guys but there is no single word in manual
 The subsystem acts simply by controlling pulse width based on the value received by CAN message from the master control unit. It also provides basic emergency behaviour in the manner that if no message was sensed over one second the pumps are turned on to work with full power.
 
 
@@ -218,7 +229,7 @@ In my implementation I have enriched calculations explained in \ref{diff_calc}. 
 Then since it is linearly proportional it is simply converted to steering angle ($\pm35\deg$). To prevent any miss usage all the values are coerced on the go to be within the ranges.
 
 Having commanded output power (in percentage) basic differential functionality could be obtained just by multiplying it with a maximum allowed/available torque and proportion on per wheel base. However, it would start failing for power close to $100\% $, although total torque will remain under the limit, the outer wheel can go above the limit by up to ($20\% $).
-This situation would be especially dangerous if the maximum torque per wheel base would start to saturate. In this case the differential would gradually stop to function effectively pushing the car out of the desired curve.
+This situation would be especially dangerous if the maximum torque per wheel base would start to saturate. In this case, the differential would gradually stop to function effectively by pushing the car out of the desired curve.
 To avoid this miss-behaviour I added the code to check if after previous calculation any of the wheels is about to be set to more than maximum torque and scale both of them accordingly.
 \begin{equation}\label{diff_saf}
     \tau_{left,right} = \begin{cases}
@@ -236,7 +247,7 @@ Where:
 \end{description}
 
 \section{Regenerative braking}
-As mentioned in theory chapter (\ref{regenerative_theory_section}) the regenerative braking cannot be used in low speeds. Normally this problem would be solved by varying the braking force between regenerative and friction breaks. However, the car design did not take into the account possibility to electrically control the friction breaks. So I implemented an alternative solution taking into account this technical obstacle and comfort of the driver.
+As mentioned in theory chapter (\ref{regenerative_theory_section}) the regenerative braking cannot be used in low speeds. Normally this problem would be solved by varying the braking force between regenerative and friction breaks. However, the car design did not take into the account the possibility to electrically control the friction breaks. So I implemented an alternative solution taking into account this technical obstacle and comfort of the driver.
 Considering regenerative braking as negative torque system which I have implemented can be expressed by equation \ref{reg_break_eq}.
 
 
@@ -256,16 +267,18 @@ Where:
     \item[$tau$] percentage of used torque (in reference to maximum value)
 \end{description}
 
-It follows the simple idea to use variable portion of pedal displacement for regenerative braking based on speed.
-When the user presses acceleration pedal in stationary vehicle the whole available scale is used to control torque giving expected instant response. After reaching $10km/h$ the pedal  displacement used for regenerative braking increases gradually to reach $15\%$ while travelling with speed equal or higher than $20km/h$.
-What else is worth to mention is that as a result for the pedal displacement from $0-15\%$ we should expect the car to act as it would be controlled in speed mode.\label{speed_mode} The characteristic would be firstly saturated by low torque however within enough power to make the car accelerate we should be able to observe linear correlation between pedal displacement and speed.
-To summarise the expected idealised correlation between torque, pedal displacement and speed has been shown in figure \ref{regen_ideal}.
+It follows the simple idea to use a variable portion of pedal displacement for regenerative braking based on speed.
+When the user presses the acceleration pedal in a stationary vehicle the whole available scale is used to control torque giving an expected instant response. After reaching $10km/h$ the pedal displacement used for regenerative braking increases gradually to reach $15\%$ while travelling with speed equal to or higher than $20km/h$.
 
-\begin{figure}[h]
+What else is worth to mention is that as a result for the pedal displacement from $0-15\%$ we should expect the car to act as it would be controlled in speed mode.\label{speed_mode} The characteristic would be firstly saturated by low torque however within enough power to make the car accelerate we should be able to observe a linear correlation between pedal displacement and speed.
+
+To summarise the expected idealised correlation between torque, pedal displacement and speed has been shown in figure \ref{fig:regen_ideal}.
+
+\begin{figure}[H]
     \centering
         \includegraphics[height=5.8cm]{figures/regen_ideal}
         \caption{Regenerative braking / torque control}
-        \label{regen_ideal}
+        \label{fig:regen_ideal}
 \end{figure}
 
 

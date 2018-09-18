@@ -1,0 +1,33 @@
+\chapter{Development}
+In the first phase development process was greatly filled up with waiting. I joined the project in February when the project was still only on paper, teams were formed to perform certain tasks and we began ordering of necessary parts.
+
+Having experience within similar systems I instantly realised that a National Instruments' controller we had in house would be a good choice for the main control unit. CompactRIO, family name of controller, consist variety of devices within fast and reliable real-time processor thigh up within FPGA (Field-Programmable Gate Array) all packaged intro rugged industrial form.
+
+From the variety of options I have chosen model cRIO9033 which has great proportion between the performance and sizing. It comes with following relevant parameters:
+\begin{table*}[H]
+    \centering
+    \begin{tabular}{r|c}
+        Processor & Dual Core Intel Atom E3825 (1.33 GHz) \\
+        RAM & 2GB (DDR3L) \\
+        FPGA & Xilinx Kintex-7 7K160T \\
+        Extension slots & 4
+    \end{tabular}
+    \caption{cRIO relevant parameters}
+    \label{tab:cRIO_param}
+\end{table*}
+
+As a consequence the software needed to be written in LabVIEW (G - language). LabVIEW has strong position in industry being used some great project like Space X or CERN, moreover it has been widely adopted also in automotive industry by companies as:
+% \begin{table*}[H]
+%     \centering
+%     \begin{tabular}{c|c|c|c|c|c}
+%         Audi & Toyota & Nissan & Honda & Bosh & Continental  \\
+%         Delphi & Visteon & Autoliv & DaimlerChrysler & Land Rover & Jaguar \\
+%         BMW & Volkswagen & TRW & General Motors & Eaton Corp & Lear Corp \\
+%         Saab & Ford & Siemens VDO & Breed Technologies & Fiat & Magneti Marelli \\
+%         Ferrari & Skoda & Suzuki & Valeo & Volvo
+%     \end{tabular}
+%     \ref{LabVIEW_adoption}
+%     \caption{LabVIEW adoption in automotive industry}
+%     \label{tab:my_label}
+% \end{table*} 
+Although, being unfamiliar with its graphical programming interface at first, I was glad to have opportunity to learn it. 

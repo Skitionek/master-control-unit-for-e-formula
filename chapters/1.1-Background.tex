@@ -67,13 +67,13 @@ ACK delimiter &\centering 1 & Must be recessive\\
 End-of-frame &\centering 7 & Must be recessive\\
 \hline
 \end{tabular}
-\end{table}\todo{Source!}\footnote{Since CAN version 2.0 messages can be sent with 11 or 29 bit IDs. however, for simplicity I will just consider usage of 11 bit identifiers (they differ just by the number of bits in this field).}
+\end{table}\cite{CAN_stuffing}\footnote{Since CAN version 2.0 messages can be sent with 11 or 29 bit IDs. however, for simplicity I will just consider usage of 11 bit identifiers (they differ just by the number of bits in this field).}
 
 It is multi-master asynchronous protocol and for proper operation requires each device to monitor the bus all the time (also during sending). So due to the fact that 0 is dominant, whenever two messages start to send at the same time the one which first sends 1 but is reading 0 stops sending immediately (non-destructive bit-wise arbitration). Effectively, prioritising messages with lower IDs.
 
 What is also worth to point out is that each CAN frame introduces protocol overhead of about 44bits per frame \footnote{Although, caring information message ID was included into message overhead calculation as in the majority of cases it could be reduced to just a few bits, on the other hand, we might expect additional bits due to bit stuffing(for each 4 bits with the same sign additional one is added)\ref{CAN_stuffing}}.
 
-\subsubsection{CANOpen}
+\subsubsection{CANOpen}\label{can_subprotocol}
 Just a two years after of CAN becoming a standard Bosh proposed a very first version of CANOpen.\ref{CANOpen_history}
 Which is a higher level of abstraction over the CAN (capable of working with a variety of versions). The objective of this additional layer is to standardise the format of the data as the original CAN protocol gives complete flexibility in the matter. 
 In CANOpen message IDs consist of first 4 bits being a function ID and 7 bits representing device code (node ID). In this way, the limitations were twisted around, in basic CAN network 2048 messages can be recognised, where CANOpen focuses on per device ID, therefore, changing limitation to 127 devices on the bus \footnote{on 7bits 128 devices could have own ID, however, ID equal to zero is used as broadcast channel}.
