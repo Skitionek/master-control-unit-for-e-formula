@@ -1,5 +1,9 @@
 \chapter{Development}
-\paragraph{Stage 1 - project start}\mbox{}\\
+\paragraph{Stage 1 - project start}   
+\addtocounter{section}{1}
+\addcontentsline{toc}{section}{
+    \protect\numberline{\thesection} Stage 1 - project start}
+\mbox{}\\
 The first phase development process was greatly filled up with waiting. I joined the project in February when the project was still only on paper, teams were formed to perform certain tasks and we began ordering of necessary parts.
 
 Having experience with similar systems I instantly realised that a National Instruments' controller we had in-house would be a good choice for the main control unit. CompactRIO - the family name of the controller, consist a variety of devices within fast and reliable real-time processor thigh up within FPGA (Field-Programmable Gate Array) all packaged intro rugged industrial form.
@@ -36,14 +40,22 @@ With this in mind, although, being unfamiliar with its graphical programming int
 
 For the first two months I have been studying the topic, learning the LabVIEW usage and preparing conceptual software implementation, yet not having any device it could communicate with.
 
-\paragraph{Stage 2 - arrival of key components}\mbox{}\\
+\paragraph{Stage 2 - arrival of key components}   
+\addtocounter{section}{1}
+\addcontentsline{toc}{section}{
+    \protect\numberline{\thesection} Stage 2 - arrival of key components}
+\mbox{}\\
 In the second week of April, I have been given an early prototype of CAN peripheral device which simply been sending a repetitive message containing a value of running counter. As a basic test prototype has been proved to successfully transmit CAN message in between two Arduinos. Therefore I assumed it works correctly, however, I was not capable to read the message by cRIO. After a few weeks of tries, I discovered that peripheral transmission speed was off from desired and send it for revision.
 
 Meanwhile, in the third week of April, the motor controllers arrived. So I soon as it happened I have made myself connection to interface with it. Although, available non of libraries was providing full functionality for CANOpen based on used NI9853 CAN module. As implementing this solution from the ground up would be far out of scope for this thesis, the decision was made on acquiring additional module desired implicitly for CANOpen communication (NI9881).
 
 Concurrently, also the BMS arrived so I have made a connection and powered it up, however, the bus voltage was floating showing only electromagnetic noise so I decided to wait until responsible team would be able to setup initial configuration of this device.
 
-\paragraph{Stage 3 - Implementation}\mbox{}\\
+\paragraph{Stage 3 - Implementation}   
+\addtocounter{section}{1}
+\addcontentsline{toc}{section}{
+    \protect\numberline{\thesection} Stage 3 - Implementation}
+\mbox{}\\
 In the mid-May just a week after the arrival of the NI9881 module and receiving a working peripheral prototype, I had both protocols running. I started by implementing a basic logging feature and tries to control the state of the motor controller. 
 
 Although basic communication was set there was still a lot of work to be done, I dedicated my time to setup motor controller and be able to control it in convenient, declarative way.
