@@ -146,7 +146,7 @@ Usage of this protocol caused a drastic drop in channel throughput considering f
 
 As each PDO message can contain up to 8 bytes aforementioned list of parameters would need to be divided into 3 CAN frames and as an result $46bits*3+19bytes+\epsilon = 290 bits +\epsilon$  \hspace{0.2cm}\footnote{\label{foot:eps}$\epsilon$ has been used to represent stuffed bits} needs to be send. On the other hand sending the same data with SDO protocol requires request-respond schema for each value so $46bits*18 + 19bytes + 9*4bytes + \epsilon = 1268 bits + \epsilon$ \hspace{0.2cm} \ref{foot:eps} needs to be send.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{figures/CANOpen vs CAN.png}
     \caption{CANOpen vs CAN}
@@ -219,10 +219,45 @@ Additionally, if any of the above-mentioned errors occurred the second CAN frame
 In our car, we have used IWAKI RD-40E24-HN1V pumps, which can be controlled by a signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with a low-pass filter.% (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}). <= I was told that by mech guys but there is no single word in manual
 The subsystem acts simply by controlling pulse width based on the value received by CAN message from the master control unit. It also provides basic emergency behaviour in the manner that if no message was sensed over one second the pumps are turned on to work with full power.
 
+When it comes to choosing the right pump power the simplest approach would be to simply relay on feedback loop (fig. \ref{pump_feedback}). Which, assuming sufficient cooling pump performance, is capable of keeping the motors within preset operational temperature scale in static conditions. However, considering sudden acceleration this system respond could be too slow letting the temperature raise above permit limits.
+To reduce respond time I have used additional feed-forward control (\ref{pump_forward}) taking as an input an accelerator position, which should be proportional to used motor power (heat dispatch).
 
+\begin{figure}[H]
+    \def\visc{0.8}
+    \centering
+    \subbottom[Pump control in feedback loop]{
+        \includegraphics[scale=\visc]{figures/Pump_feedback}
+        \label{pump_feedback}
+    }
+    ~
+    \subbottom[Pump control with feedback loop and feed forward patch]{
+        \includegraphics[scale=\visc]{figures/Pump_forward}
+        \label{pump_forward}
+    }
+    \caption{Pump control}
+    \label{vi:set_get_nodeid}
+    \medskip
+    \small
+    \textit{The parameters coefficients has been omitted for simplicity}
+\end{figure}
 
-
-
+The pump power therefore is calculated accordingly to following equation:
+\begin{equation}\label{pump_eq}
+    \tau_{left,right} = \begin{cases}
+        P_{pump} = 50\% & \text{se $T<T_{min}$}\\
+        P_{pump} = 50\%+coerce(norm(T) + D)*50\% & \text{se $T \in <T_{min},T{max}>$}\\
+        P_{pump} = 100\% & \text{se $T>T{max}$}
+    \end{cases}
+\end{equation}
+Where:
+\begin{description}
+    \item[$P_{pump}$] pump power in percentage
+    \item[T] higher on of two motor temperatures
+    \item[\textbf{$T_{min}$, $T{max}$}] operational temperature limits in this case equal to $40^\circ C$ and $60^\circ C$
+    \item[coerce()] returns value limited to $<0,1>$
+    \item[norm(T)] $=coerce(\frac{T - T_{min}}{T_{max}-T_{min}})$ 
+    \item[D] acceleration pedal displacement in percentage
+\end{description}
 
 \section{Implementation of electrical differential based on steering angle}\label{diff_meth}
 In my implementation I have enriched calculations explained in \ref{diff_calc}. Starting with the steering wheel, the sensor output is normalised to the measured minimum and maximum steering wheel angles ($\pm123\deg$) so the meaningful value can be shown in remote control panel as well as saved in logs. 

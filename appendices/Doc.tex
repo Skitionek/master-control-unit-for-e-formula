@@ -1,19 +1,20 @@
+\def\visc{0.6}
 \Chapter{}{Software documentation}\label{apx:doc}
-Going from general picture to details the program is designed to be started by running main.vi (which is happening upon boot or can be done manually whenever desired).
+The program is designed to be started by running main.vi (which is happening upon boot or can be done manually whenever desired).
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Run_maind.png}
-    \caption{main.vi}
+    \includegraphics[width=\textwidth]{figures/VI_over.pdf}
+    \caption{main.vi with overview cover}
     \label{vi:main}
 \end{figure}
 
-The main program is a sequence of stages which for simplicity I will call "Initialisation", "Operation" and "Closing". Out of 3, the last one has no complexity to be explained, its only function is to close the log file. 
+It is a sequence of stages which for simplicity I will call "Initialisation", "Operation" and "Closing". Out of 3, the last one has no complexity to be explained, its only function is to close the log file. 
 I have tried to reflect each level of functionality nesting by the document structure Section->Subsection->Subsection->Paragraph etc. However, to avoid overwhelmingly deep nest structure I have elevated description of "Vehicle control - drive" from point \ref{sec:veh_contr} to separate section. Also I used the last section to describes low level functions which has been used in the whole project.
 
 \section{Initialisation}
 \begin{wrapfigure}{l}{0.33\textwidth}
     \centering
-    \includegraphics[width=0.3\textwidth]{figures/Run_maind31.png}
+    \includegraphics[scale=\visc,max width=0.3\textwidth]{figures/Run_maind31.png}
     \caption{Turn of simulation when used without control panel}
     \label{vi:maind31}
     \vspace{-15pt}
@@ -25,7 +26,7 @@ This has been done by sensing LabVIEW's "RUN\_TIME\_ENGINE" environmental value 
 \begin{wrapfigure}{!r}{0.33\textwidth}
     \vspace{-15pt}
     \centering
-    \includegraphics[width=0.3\textwidth]{figures/Initialise_cRIOc}
+    \includegraphics[scale=\visc,max width=0.3\textwidth]{figures/Initialise_cRIOc}
     \caption*{}
     \label{vi:init_crioc}
     \vspace{-15pt}
@@ -33,7 +34,7 @@ This has been done by sensing LabVIEW's "RUN\_TIME\_ENGINE" environmental value 
 Whenever setting of basic parameters is done the Initialise\_cRIO.vi is called to boot sub-modules, init the synchronisation primitives and start logging of system state (\ref{vi:init_crioc}).
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Initialise_cRIOd.png}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Initialise_cRIOd.png}
     \caption{Initialise\_cRIO.vi}
     \label{vi:init_crioc}
 \end{figure}
@@ -49,7 +50,7 @@ Additionally error queue is initialised which would accumulate the errors and si
 \subsubsection{Generate log file}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Generate_log_file_pathd.png}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Generate_log_file_pathd.png}
     \caption{Generate\_log\_file\_path.vi}
     \label{vi:Generate_log_file_path}
 \end{figure}
@@ -62,7 +63,7 @@ Last but not least the Initialise\_cRIO.vi call the functions to start communica
 \subsubsection{Initialise CANOpen Session}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Open_CANOpen_Sessiond}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Open_CANOpen_Sessiond}
     \caption{Open\_CANOpen\_Session.vi}
     \label{vi:Open_CANOpen_Session}
 \end{figure}
@@ -71,7 +72,7 @@ National Instruments provides a great interface for their CANOpen module so star
 On the other hand to interference with CAN module only very low-level API has been provided which on FPGA level is able to accept CAN frame to send and return read one. Therefore the whole interface needed to be built on the top of this API to provide all the data and usable abstraction from real-time processor level.
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Open_CAN_Sessiond}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Open_CAN_Sessiond}
     \caption{Open\_CAN\_Session.vi}
     \label{vi:Open_CAN_Session}
 \end{figure}
@@ -97,14 +98,14 @@ For instant feedback whenever a remote panel is not connected the diode of cRIO 
 Then the shutdown functions are described as follows.
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Emergency_turn_off}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Emergency_turn_off}
     \caption{Emergency shutdown}
     \label{vi:emc_shut}
 \end{figure}
 Emergency shutdown (\ref{vi:emc_shut}) react upon notification/interrupt and if the motors are not simulated the "Quick stop" message is sent to both of them. Then after possibly avoiding hazardous situation controller follows up with normal shutdown sequence (\ref{vi:shut}).
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Emergency_turn_off}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Emergency_turn_off}
     \caption{Shutdown}
     \label{vi:shut}
 \end{figure}
@@ -112,7 +113,7 @@ Emergency shutdown (\ref{vi:emc_shut}) react upon notification/interrupt and if 
 During normal shutdown process (\ref{vi:shut_seq})
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Shutdown_Sequenced}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Shutdown_Sequenced}
     \caption{Shutdown\_Sequence.vi}
     \label{vi:shut_seq}
 \end{figure}
@@ -124,14 +125,14 @@ Last but not least the CANOpen communication objects are released, CANOpen sessi
 Closing CAN session is a bit tedious task, analogue to opening process.
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Close_CAN_Communicationd}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Close_CAN_Communicationd}
     \caption{Close\_CAN\_Communication.vi}
     \label{vi:close_can}
 \end{figure}
 First of all the closing notifiers are acquired and close notifications send (point 2). This operation wound stop the receiving/sending loop. Once again to ensure that this already happened we are waiting a second. Then function is called to close all the primitives opened during initialisation process (\ref{vi:close_can_queues}).
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/Close_CAN_Communication_queuesd}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Close_CAN_Communication_queuesd}
     \caption{Close\_CAN\_Communication\_queues.vi}
     \label{vi:close_can_queues}
 \end{figure}
@@ -189,7 +190,7 @@ Starting code has been shown in figure \ref{vi:boot_sequence}
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[Part 1]{
-        \includegraphics[width=\textwidth]{figures/Vechicle_Boot_Sequenced01}
+        \includegraphics[scale=\visc,max width=0.98\textwidth]{figures/Vechicle_Boot_Sequenced01}
     }
 \end{figure}
 \begin{figure}[H]\ContinuedFloat
@@ -198,7 +199,7 @@ Starting code has been shown in figure \ref{vi:boot_sequence}
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[Part 2]{
-        \includegraphics[width=\textwidth]{figures/Vechicle_Boot_Sequenced02}
+        \includegraphics[scale=\visc,max width=0.98\textwidth]{figures/Vechicle_Boot_Sequenced02}
     }
 \end{figure}
 \begin{figure}[H]\ContinuedFloat
@@ -207,7 +208,7 @@ Starting code has been shown in figure \ref{vi:boot_sequence}
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[Part 3]{
-        \includegraphics[width=\textwidth]{figures/Vechicle_Boot_Sequenced03}
+        \includegraphics[scale=\visc,max width=0.98\textwidth]{figures/Vechicle_Boot_Sequenced03}
     }
     \caption{Vehicle\_boot\_sequence.vi}
     \label{vi:boot_sequence}
@@ -230,7 +231,7 @@ it can easily be describe in a few consecutive points:
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[Part 1]{
-        \includegraphics[width=\textwidth]{figures/Get_BMS_into_load_moded01}
+        \includegraphics[scale=\visc,max width=0.98\textwidth]{figures/Get_BMS_into_load_moded01}
     }
 \end{figure}
 \begin{figure}[H]\ContinuedFloat
@@ -239,7 +240,7 @@ it can easily be describe in a few consecutive points:
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[Part 2]{
-        \includegraphics[width=\textwidth]{figures/Get_BMS_into_load_moded02}
+        \includegraphics[scale=\visc,max width=0.98\textwidth]{figures/Get_BMS_into_load_moded02}
     }
     \caption{Get\_BMS\_into\_load\_mode.vi}
     \label{vi:boot_BMS}
@@ -251,7 +252,7 @@ Reasoning behind this sequence has been described in BMS manual \cite{BMS_manual
 \paragraph{Boot motor controller}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Boot_Motor_Controlerd}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Boot_Motor_Controlerd}
     \caption{Boot\_motor\_controller.vi}
     \label{vi:boot_MC}
 \end{figure}
@@ -270,7 +271,7 @@ Whenever the controllers are finally operational the SDO communication object ha
 
 \vspace{1em}
 \noindent\fbox{%
-    \parbox{\textwidth}{%
+    \parbox{0.98\textwidth}{%
         For simplicity and to emphasise importance the sub-subsection "Vehicle control - drive" has been moved from its logical placement in here to separate section.
     }%
 }
@@ -282,7 +283,7 @@ To start with event of entering the next state is saved into log file and the LE
 Two of them are simply responsible for logging the device state (figure \ref{logging}).
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Drive_log.png}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Drive_log.png}
     \caption{Logging}
     \label{logging}
 \end{figure}
@@ -293,7 +294,7 @@ Whereas slow changing signals as pump status is saved on each second and the bat
 Then there are loops to read (and update local value) of low voltage BMS status and react to its error. As well as one to read main BMS status.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Read_BMSs.png}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Read_BMSs.png}
     \caption{Service BMS messages}
     \label{BMSs_status}
 \end{figure}
@@ -301,7 +302,7 @@ To keep the BMS in load mode it needs to receive load request at least once per 
 Additionally this loop has been used to actually sense if the BMS is in load mode and turn off the system otherwise (fig. \ref{vi:Keep_BMS_in_load_mode_message}).
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Keep_BMS_in_load_mode_messaged}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Keep_BMS_in_load_mode_messaged}
     \caption{Keep\_BMS\_in\_load\_mode\_message.vi}
     \label{vi:Keep_BMS_in_load_mode_message}
 \end{figure}
@@ -311,7 +312,7 @@ Pedals service beside simply receiving status messages and issuing messages to m
 In the most simple approach car would keep accelerating until reaching to speed or it has been turned off.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Pedals_status}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Pedals_status}
     \caption{Steering/pedals sensors service}
     \label{pedals_service}
 \end{figure}
@@ -320,14 +321,14 @@ To counteract this unlikely event a watchdog like functionality has been impleme
 \subsection{Service motor controllers}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Run_maind1_e}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Run_maind1_e}
     \caption{Service motor controllers}
     \label{s_m_c}
 \end{figure}
 \paragraph{Motor controller} target torque is updated on each request (notification in "Update Motors Notifier"). 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Update_motors_target_valuesd}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Update_motors_target_valuesd}
     \caption{Update\_motors\_target\_values.vi}
     \label{vi:Update_motors_target_values}
 \end{figure}
@@ -338,7 +339,7 @@ It is done in the manner that whenever \textit{Update\_motors\_target\_values.vi
 \paragraph{Motor status} is obtained on each 100 ms by the call to Pool\_motor\_status.vs (fig. \ref{vi:Pool_motor_statusd}) which works in very similar manner to the way the target values are updated.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Pool_motor_statusd}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Pool_motor_statusd}
     \caption{Pool\_motor\_status.vi}
     \label{vi:Pool_motor_statusd}
 \end{figure}
@@ -347,15 +348,15 @@ It is done in the manner that whenever \textit{Update\_motors\_target\_values.vi
 Last but not least during the drive mode the pumps are controlled by the code shown in figure \ref{pumps_service}.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Pumps}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Pumps}
     \caption{Pumps service}
     \label{pumps_service}
 \end{figure}
 What is happening in the code is that pumps are set to full power for first 3s (initialise spin) and the loop is started which updates pumps duty cycle based speed and motor temperatures on each 100ms.
-The update is done by call to \textit{Control\_Pump\_Power\_(acc\_and\_temp).vi} which simply calculates desired duty cycle and sends the message to pump controller (VIs further described in \todo{ref}).
+The update is done by call to \textit{Control\_Pump\_Power\-\_(acc\_and\_temp).vi} which simply calculates desired duty cycle and sends the message to pump controller (VIs further described in \todo{ref}).
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Control_Pump_Power_(acc_and_temp)d_e}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Control_Pump_Power_(acc_and_temp)d_e}
     \caption{Control\_Pump\_Power\_(acc\_and\_temp).vi}
     \label{vi:Control_Pump_Power_(acc_and_temp)}
 \end{figure}
@@ -370,10 +371,10 @@ I have written 5 logging functions where all of them follows the same pattern.
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[(a) Log\_State.vi]{
-        \includegraphics[width=0.36\textwidth]{figures/Log_Stated}
+        \includegraphics[scale=\visc,max width=0.36\textwidth]{figures/Log_Stated}
     }
     \subbottom[(b) Log\_Error.vi]{
-        \includegraphics[width=0.56\textwidth]{figures/Log_Errorsd}
+        \includegraphics[scale=\visc,max width=0.56\textwidth]{figures/Log_Errorsd}
     }
 \end{figure}
 \begin{figure}[h]\ContinuedFloat
@@ -382,10 +383,10 @@ I have written 5 logging functions where all of them follows the same pattern.
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[(c) Log\_Motor.vi]{
-        \includegraphics[width=0.56\textwidth]{figures/Log_Motorsd}
+        \includegraphics[scale=\visc,max width=0.56\textwidth]{figures/Log_Motorsd}
     }
     \subbottom[(d) Log\_Pump.vi]{
-        \includegraphics[width=0.36\textwidth]{figures/Log_Pumpd}
+        \includegraphics[scale=\visc,max width=0.36\textwidth]{figures/Log_Pumpd}
     }
 \end{figure}
 \begin{figure}[h]\ContinuedFloat
@@ -394,7 +395,7 @@ I have written 5 logging functions where all of them follows the same pattern.
     \tightsubcaptions % we want tight subcaptions
     \setlength{\subfloatlabelskip}{0pt}% no space between number and caption
     \subbottom[(e) Log\_Batteries.vi]{
-        \includegraphics[width=\textwidth]{figures/Log_Batteriesd}
+        \includegraphics[scale=\visc,max width=0.98\textwidth]{figures/Log_Batteriesd}
     }
     \caption{Logging functions}
 \end{figure}
@@ -403,7 +404,184 @@ The semaphore for log file is acquired, then the data is save to TDMS file along
 The same procedure has been followed has been followed in all the files including \textit{Log\_Motors.vi} where it has been implemented in separate file to avoid duplication - \textit{Motor\_to\_TDMS.vi} (fig. \ref{vi:Motor_to_TDMS}).
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/Motor_to_TDMSd}
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Motor_to_TDMSd}
     \caption{Motor\_to\_TDMS.vi}
     \label{vi:Motor_to_TDMS}
 \end{figure}
+
+\subsection{SDO wrappers}
+CANOpen SDO object are accessed by their address and field number. Although, it is clear enough to machine, the user might have problem to understand for example why we are sending 15 to address 0x6040. To make the code readable and possible to use/develop without manual I had been writing the wrapping functions for SDO objects.
+
+Lets take for example node ID which resides in SDO address 0x100B. To make it accessible I have written simple getter \textit{Get\_Node\_ID.vi} and setter \textit{Set\_Node\_ID.vi} (fig. \ref{vi:set_get_nodeid}).
+\begin{figure}[h]
+    \centering
+    \subbottom[Get\_Node\_ID.vi]{
+        \includegraphics[scale=\visc,max width=0.47\textwidth]{figures/Get_Node_IDd}
+    }
+    \subbottom[Set\_node\_ID.vi]{
+        \includegraphics[scale=\visc,max width=0.47\textwidth]{figures/Set_node_IDd}
+    }
+    \caption{Node ID getter/setter}
+    \label{vi:set_get_nodeid}
+\end{figure}
+I have wrote it for all used parameters and then encapsulated it into two polymorphic VI. Therefore accessing each parameter is as simple as taking \textit{Get\_SDO.vi} or \textit{Set\_SDO.vi} and choosing the name of parameter from the list as shown in figure \todo{sdo list}.
+This said I have also wrote a bit more complex setters/getters. For example \textit{Set\_Controlword.vi} (fig. \ref{vi:Set_Controlword}) allows user to choose control world by its name instead of binary notation.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Set_Controlwordd}
+    \caption{Set\_Controlword.vi}
+    \label{vi:Set_Controlword}
+\end{figure}
+Whereas \textit{Set\_PDO\_receive\_mapping.vi} goes a few steps further providing validation of send data, raising errors (sum data mapping per PDO channel cannot be bigger than 64 bits) and sets PDO channel mapping based on variable length array (changes values in multiple SDOs).
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Set_PDO_recive_mappingd}
+    \caption{Set\_PDO\_receive\_mapping.vi}
+    \label{vi:Set_PDO_recive_mapping}
+\end{figure}
+Another interesting example would be \textit{Set\_PDOs\_COB\_IDs.vi} where values are calculated on the fly to update PDOs COB IDs (fig. \ref{vi:Set_PDOs_COB_IDs}).
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Set_PDOs_COB_IDsd}
+    \caption{Set\_PDOs\_COB\_IDs.vi}
+    \label{vi:Set_PDOs_COB_IDs}
+\end{figure}
+There are also functions which further encapsulates above mentioned complex implementations such as \textit{Set\_PDOs\_mapping.vi} or \textit{Set\_into\_drive\_mode.vi} (fig \ref{vi:Set_PDOs_mapping},\ref{vi:Set_into_drive_mode}).
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Set_PDOs_mappingd}
+    \caption{Set\_PDOs\_mapping.vi}
+    \label{vi:Set_PDOs_mapping}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Set_into_drive_moded}
+    \caption{Set\_into\_drive\_mode.vi}
+    \label{vi:Set_into_drive_mode}
+\end{figure}
+
+\subsection{CAN message wrapping}
+In the same manner as SDO also the CAN messages has been wrapped. However, due to smaller quantity of them I have chosen to more freely adapt them to the places they are called. Therefore there is no one polymorphic VI containing the list of functionality.
+Instead functions has to be called directly by their VIs. This is minor disadvantage, however it greatly simplifies usage.
+
+Simplest CAN message wrapping can be seen in \textit{Set\_Pump\_Power.vi} (fig. \ref{vi:Set_Pump_Power}).
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Set_Pump_Powerd}
+    \caption{Set\_Pump\_Power.vi}
+    \label{vi:Set_Pump_Power}
+\end{figure}
+
+Other wrappings are clearly adjusted to use cases like \textit{Get\_pedal\_status.vi} (fig. \ref{vi:Get_pedal_status}).
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Get_pedal_statusd}
+    \caption{Get\_pedal\_status.vi}
+    \label{vi:Get_pedal_status}
+\end{figure}
+The code except of sending the message contains all the functionality from the containing control loop. So the update motors notification is send, watchdog value is updated and possible error added to queue to be serviced.
+
+There is quiet few more examples but I believe that they are self explanatory.
+
+\subsection{Read CAN message}
+To make CAN message wrapping possible a few CAN read messages needed to be implemented. The implementation has been wrapped into polymorphic VI which resolves to one of three functions based on connected data.
+
+\begin{wrapfigure}{r}{0.33\textwidth}
+    \centering
+    \vspace{-20pt}
+    \includegraphics[scale=\visc,max width=0.3\textwidth]{figures/Read_single_CANd2}
+    \caption{Error generation upon CAN read timeout}
+    \label{vi:CAN_timeout}
+    \vspace{-60pt}
+\end{wrapfigure}
+The "Read CAN" functions accepts message ID to be send as single value, array of IDs or be omitted which corresponds to VIs call \textit{Read\_single\_CAN.vi}, \textit{Read\_Array\_CAN.vi} and \textit{Read\_All\_CAN.vi}.
+All of them exits upon message arrival or due to timeout (with error - fig. \ref{vi:CAN_timeout}).
+
+\vspace{2em}
+
+\subsubsection{Read single CAN ID}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Read_single_CANd}
+    \caption{Read\_single\_CAN.vi}
+    \label{vi:Read_single_CAN}
+\end{figure}
+\begin{wrapfigure}{r}{0.33\textwidth}
+    \centering
+    \includegraphics[scale=\visc,max width=0.3\textwidth]{figures/Element_in_queued}
+    \caption{Element\_in\_queue.vi}
+    \label{vi:Element_in_queue}
+    \medskip
+    \small
+    \textit{Function "Queue status" returns error in case if reference is not valid and number of elements otherwise.}
+    \vspace{-15pt}
+\end{wrapfigure}
+The code firstly deference the CAN session pointer, then from array of read queues the one with desired ID is taken and checked if it contains an item (firstly checking if the queue exist fig. \ref{vi:Element_in_queue}). This initial check is done to the fact that I do not want to miss a message which can prior to this function call but was not served yet.
+
+If the queue does not contain a message the remaining timeout is calculated as difference of current time-stamp and the time when function was initially called. Then within timeout wait for new CAN frame notification is called and loop is repeated whenever message comes.
+
+There is also additional functionality encoded, if the initial timeout is set to be -1 the read function never times out.
+
+\subsubsection{Read array of CAN IDs}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Read_Array_CANd}
+    \caption{Read\_Array\_CAN.vi}
+    \label{vi:Read_Array_CAN}
+\end{figure}
+Read array functions similarly to previous example, the CAN session is referenced and array of IDs is iterated checking if corresponding queues already contains messages (exit on first found).
+
+If no message has been found it waits for notification in the same manner as read single. Upon notification the message ID is decoded from it. If it is one of the desired ones an initial array of IDs is shuffled such that the just arrived ID appears as first one and the function loop back to the first check. 
+
+\subsubsection{Read all CAN messages}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Read_All_CANd}
+    \caption{Read\_All\_CAN.vi}
+    \label{vi:Read_All_CAN}
+\end{figure}
+This VI simply check if there is no message in queue array, waits for new CAN frame notification and returns message to come.
+
+\subsection{Calculation utilities}
+\subsubsection{Differential disproportion}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Calculate_differential_torque_disproportiond}
+    \caption{Calculate\_differential\_torque\_disproportion.vi}
+    \label{vi:Calculate_differential_torque_disproportion}
+\end{figure}
+In point 1, case when steering wheel angle is equal to zero is addressed separately as used equation (\ref{diff_eq_w}) does not have solution in the point ($cot(0)$). In the case simply 1 is returned for both outputs.
+Otherwise the steering wheel position is checked to fall withing its operational limits ($-124\,^{\circ},124\,^{\circ}$). If not error is returned (point 3), position is coerced and calculations are continued.
+
+Point 4 simply follows equations \ref{diff_eq_w} and \ref{diff_eq}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Calculate_torque_per_wheeld}
+    \caption{Calculate\_torque\_per\_wheel.vi}
+    \label{vi:Calculate_torque_per_wheel}
+\end{figure}
+
+\begin{wrapfigure}{r}{0.33\textwidth}
+    \centering
+    \includegraphics[scale=\visc,max width=0.3\textwidth]{figures/Normalised}
+    \caption{Normalise.vi}
+    \label{vi:Normalise}
+    \medskip
+    \small
+    \textit{Simply takes maximum, value and minimum as an input and returns normalised value from 0 to 1 saturating on these values (additionally giving Boolean indicators when saturates)}
+\end{wrapfigure}
+\textit{Calculate\_torque\_per\_wheel.vi} encapsulates calculations for differential adding desired scaling in respect to accelerator position, vehicle speed and controls behaviour in case of torque saturation.
+
+In point 1 the average of wheels speeds is calculated and transformed from rpm into km/h. Then speed and accelerator values are normalised (and coerced) within their limits (point 2). As the speed value is coerced within 10-20km/h the equation \ref{reg_break_eq} is simply calculated in point 4 resulting in desired torque percentage (negative value corresponds to regenerative breaking). Up to point 5 values are transformed accordingly to equation \ref{diff_saf} providing safety solution in case of torque saturation. Last but not least torque percentage is multiplied within its maximum allowed value and right wheel is multiplied by -1 so it rotates in the same direction as left one.
+
+\subsubsection{Pump power}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/Calculate_Pump_Powerd}
+    \caption{Calculate\_Pump\_Power.vi}
+    \label{vi:Calculate_Pump_Power}
+\end{figure}
+The calculations simply follows equation \ref{pump_eq} described in \ref{pump_control} section.
+
+\todo{CAN communication}
