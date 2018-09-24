@@ -1,21 +1,21 @@
 %!TEX root = ../Thesis.tex
 
 % 3. Method section
-% In a scholarly research article, the section dealing with method is very important. The same applies to an empirical thesis. For students, this can be a difficult section to write, especially since its purpose may not always be clear.
+% In a scholarly research article, the section dealing with the method is very important. The same applies to an empirical thesis. For students, this can be a difficult section to write, especially since its purpose may not always be clear.
 
 % The method chapter should not iterate the contents of methodology handbooks. For example, if you have carried out interviews, you do not need to list all the different types of research interview. You also do not need to describe the differences between quantitative and qualitative methods, or list all different kinds of validity and reliability.
 
-% What you must do is to show how your choice of design and research method is suited to answering your research question(s). Demonstrate that you have given due consideration to the validity and reliability of your chosen method. By “showing” instead of “telling”, you demonstrate that you have understood the practical meaning of these concepts. This way, the method section is not only able to tie the different parts of your thesis together, it also becomes interesting to read!
+% What you must do is to show how your choice of design and research method is suited to answering your research question(s). Demonstrate that you have given due consideration to the validity and reliability of your chosen method. By “showing” instead of “telling”, you demonstrate that you have understood the practical meaning of these concepts. This way, the method section is not only able to tie the different parts of your thesis together, but it also becomes interesting to read!
 
 % Show the reader what you have done in your study, and explain why. How did you collect the data? Which options became available through your chosen approach?
 % What were your working conditions? What considerations did you have to balance?
-% Tell the reader what you did to increase the validity of your research. E.g., what can you say about the reliability in data collection? How do you know that you have actually investigated what you intended to investigate? What conclusions can be drawn on this basis? Which conclusions are certain and which are more tentative? Can your results be applied in other areas? Can you generalise? If so, why? If not, why not?
+% Tell the reader what you did to increase the validity of your research. E.g., what can you say about the reliability of data collection? How do you know that you have actually investigated what you intended to investigate? What conclusions can be drawn on this basis? Which conclusions are certain and which are more tentative? Can your results be applied to other areas? Can you generalise? If so, why? If not, why not?
 % You should aim to describe weaknesses as well as strengths. An excellent thesis distinguishes itself by defending – and at the same time criticising – the choices made.
 
-\chapter{Method}
+\chapter{Methods}
 
-% Having not sufficient financial support enforced many compromises on design which I did not have direct influence on. The decision was made that will be running in low voltage - high current setup so we could use cost-efficient lithium-ion batteries. 
-% Although theoretically possible cabling and connector sizing was a bit overwhelming for responsible teams.
+% Having not sufficient financial support enforced many compromises on the design which I did not have a direct influence on. The decision was made that will be running in low voltage - high current setup so we could use cost-efficient lithium-ion batteries. 
+% Although theoretically possible cabling and connector sizing were a bit overwhelming for responsible teams.
 
 
 \begin{figure}[b]
@@ -26,20 +26,20 @@
 \end{figure}
 
 
-We \todo{is it right to say we?} have built an electric car from scratch based on buggy frame, where all the pipes are welded together and all the components directly attached to it. Although in this solution, all the vibrations are transferred to the driver (reducing his comfort) it is a durable and light solution - the aspects which were the most important due to the racing character of the vehicle. 
+We have built an electric car from scratch based on a buggy frame, where all the pipes are welded together and all the components directly attached to it. Although in this solution, all the vibrations are transferred to the driver (reducing his comfort) it is a durable and light solution - the aspects which were the most important due to the racing character of the vehicle. 
 
-In our final setup we used:
+Among many available options in our final setup we have used:
 \begin{itemize}
-    \item Two EMRAX228 motors which nominal power of about 50kW (when liquid cooled)
-    \item Two emDrive500 controllers capable full usage of AM motors
+    \item Two EMRAX228 motors where each of them is capable to work within continuous power of $28-42kW$\footnote{exact value depends on motor RPM}\cite{emrax_manual}
+    \item Two emDrive500 controllers, implementing CANOpen protocol and being capable to make full usage of AM motors
     \item Arduino with CAN shields to act as intelligent sensors/controllers
-    \item Two IWAKI direct drive pumps (RD-40E24-HN1V) pumps for cooling purposes
+    \item Two IWAKI direct drive pumps (RD-40E24-HN1V) for cooling purposes \todo{flow params?}
     % \begin{wrapfigure}
     %     \includegraphics[width=0.33\textwidth]{figures/Pump.pdf}
     % \end{wrapfigure}
     \item National Instruments' cRIO-9033 as a main control unit
 \end{itemize}
-
+\newpage
 This result in the system which in a simplified manner has been presented in figure \ref{fig:whole}.
 
 \begin{figure}[h]
@@ -47,24 +47,22 @@ This result in the system which in a simplified manner has been presented in fig
     \includegraphics[width=\textwidth]{figures/Whole_with_details.pdf}
     \caption{Architecture overview}
     \label{fig:whole}
-\end{figure}
+\end{figure}\todo{12V next to CAN + dashboard + LV to emc}
 
-As shown all the communication with the master control unit is based on CAN bus (CANOpen is based on CAN bus). 
+To start with in the left corner the breaking light has been shown, it operates on the 12V line and provides two levels of intensity (two sets of LEDs controlled independently). The control is based directly on CAN message send by pedals controller, providing additional functionality of lighting up if the connection is lost and blinking if pedals are sending the error messages.
+To the right, we can see electrical buzzer (which is being used as ready to drive signal) and cooling pumps taking the same 12V and being controlled by a signal in between 0 and 5V. These all have been connected to the system by CAN adapter in the rear part of the car.
 
+Other CAN module is a low voltage battery management system (LV BMS). It monitors each battery cell voltage and temperature, forwards this data to master control unit and cuts of low voltage battery out of circuit in case of any failures (voltage below operational or too high temperature).
 
+Below the pedals/steering wheel intelligent sensor has been shown. It forwards the sensors values, provides a calibration interface and sends the errors due to under-travel, over-travel or sensors miss-match.
 
+Another module is responsible for translating the CAN messages into indicator statuses on the dashboard and sensing the ignition buttons presses. 
 
+Last but not least basic CAN device in the system is the BMS for the main battery, it monitors the cell state, provides load balancing and based on collected data deciding decides if the battery can be connected to the circuit.
 
+The system which is completely independent to digital busses, emergency circuit, provides analogue circuits responsible for closing pre-charge relays and main contractors based on a variety of factors. The logic is based on pedals position (if accelerator and brake pedal are pressed simultaneously the main contractor is opened\footnote{Requirement by Formula Student}), LV BMS and main BMS.
 
-All small subsystems are based on Arduino evaluation boards.
-
-
-
-
-As previously mentioned the main control unit has been deployed on cRIO9033 - National Instruments' controller equipped with a real-time processor and re-configurable FPGA unit. The reasoning for usage of this device was that it has more than sufficient computation power for the task and with additional modules provides support for basic CAN communication as well as high-level CANOpen abstraction.
-
-
-In my setup, I have been using module NI9853 to directly receive and send a CAN messages and NI9881 for communication with the motor controllers based on CANOpen standard.
+If there are no safety issues AM system allows the voltage to flow into motor controllers. These devices are the only ones to communicate with the master control unit (MCU) by CANOpen bus. Beside MCU each controller is directly connected to the motor by three-phase cable\footnote{actually three separate cables to carry all the load}, to attached resolves and temperature sensors.
 
 \section{Master control unit software implementation}
 From the early beginning, I have been developing the code of master control unit using event-based programming paradigm. The reasoning of this is asynchronous, real-time nature of such unit.
@@ -148,11 +146,11 @@ As each PDO message can contain up to 8 bytes aforementioned list of parameters 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/CANOpen vs CAN.png}
+    \includegraphics[width=0.8\textwidth]{figures/CANOpen_vs_CAN}
     \caption{CANOpen vs CAN}
     \label{fig:canopen_bitwise}
-    \todo{enrich it by missing fields}
 \end{figure}
+    \todo{enrich it by missing fields}
 
 Furthermore, also the target torque off motor controllers needs to be adjusted SDO messages. In this case, performance drawback is even more visible, if the PDO protocol could be used torque values could be sent together within one CAN frame ($46bits+4bytes=78 bits$), however, within SDO 4 CAN frames needs to be sent ($46bits*4+4bytes+4bytes*2=280bits$).
 
@@ -219,8 +217,8 @@ Additionally, if any of the above-mentioned errors occurred the second CAN frame
 In our car, we have used IWAKI RD-40E24-HN1V pumps, which can be controlled by a signal from $0-5V$. Since used Arduino has no dedicated analogue input we made one by using the PWM signal with a low-pass filter.% (direct control by PWM signal was strongly disapproved by the pump manufacturer \todo{cite pump manual}). <= I was told that by mech guys but there is no single word in manual
 The subsystem acts simply by controlling pulse width based on the value received by CAN message from the master control unit. It also provides basic emergency behaviour in the manner that if no message was sensed over one second the pumps are turned on to work with full power.
 
-When it comes to choosing the right pump power the simplest approach would be to simply relay on feedback loop (fig. \ref{pump_feedback}). Which, assuming sufficient cooling pump performance, is capable of keeping the motors within preset operational temperature scale in static conditions. However, considering sudden acceleration this system respond could be too slow letting the temperature raise above permit limits.
-To reduce respond time I have used additional feed-forward control (\ref{pump_forward}) taking as an input an accelerator position, which should be proportional to used motor power (heat dispatch).
+When it comes to choosing the right pump power the simplest approach would be to simply relay on feedback loop (fig. \ref{pump_feedback}). Which, assuming sufficient cooling pump performance, is capable of keeping the motors within preset operational temperature scale in static conditions. However, considering sudden acceleration this system respond could be too slow letting the temperature rise above permit limits.
+To reduce response time I have used additional feed-forward control (\ref{pump_forward}) taking as an input an accelerator position, which should be proportional to used motor power (heat dispatch).
 
 \begin{figure}[H]
     \def\visc{0.8}
@@ -241,7 +239,7 @@ To reduce respond time I have used additional feed-forward control (\ref{pump_fo
     \textit{The parameters coefficients has been omitted for simplicity}
 \end{figure}
 
-The pump power therefore is calculated accordingly to following equation:
+The pump power, therefore, is calculated accordingly to the following equation:
 \begin{equation}\label{pump_eq}
     \tau_{left,right} = \begin{cases}
         P_{pump} = 50\% & \text{se $T<T_{min}$}\\
@@ -315,7 +313,3 @@ To summarise the expected idealised correlation between torque, pedal displaceme
         \caption{Regenerative braking / torque control}
         \label{fig:regen_ideal}
 \end{figure}
-
-
-
-

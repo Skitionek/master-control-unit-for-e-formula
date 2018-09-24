@@ -27,16 +27,16 @@ This has been done by sensing LabVIEW's "RUN\_TIME\_ENGINE" environmental value 
     \vspace{-15pt}
     \centering
     \includegraphics[scale=\visc,max width=0.3\textwidth]{figures/Initialise_cRIOc}
-    \caption*{}
-    \label{vi:init_crioc}
+    \caption*{Initialise\_cRIO I/Os}
+    % \label{vi:init_crioc}
     \vspace{-15pt}
 \end{wrapfigure}
-Whenever setting of basic parameters is done the Initialise\_cRIO.vi is called to boot sub-modules, init the synchronisation primitives and start logging of system state (\ref{vi:init_crioc}).
+Whenever setting of basic parameters is done the Initialise\_cRIO.vi is called to boot sub-modules, init the synchronisation primitives and start logging of system state (\ref{vi:init_criod}).
 \begin{figure}[!h]
     \centering
     \includegraphics[scale=\visc,max width=\textwidth]{figures/Initialise_cRIOd.png}
     \caption{Initialise\_cRIO.vi}
-    \label{vi:init_crioc}
+    \label{vi:init_criod}
 \end{figure}
 
 In the VI, three notifiers\footnote{LabVIEW synchronisation primitive acting in a similar way to interrupts} are spawned:
@@ -81,9 +81,7 @@ Implementation would hard to discuss as whole so figure \ref{vi:Open_CAN_Session
     \item As the first step, the queue (linked list) is created to serve as a buffer for messages to be written to the bus.
     \item Then notifiers/interrupts are defined so the interface can be gracefully closed.
     \item Array with entity for each message ID is created, as for the point of time it is filled with zero references to queues capable of containing CAN Frames\footnote{CAN Frame (instead of CAN frame) is used to signal that it refers to the data structure, not physical signal pattern} (queue with the data type set to be a CAN Frame).
-    \\
-    \todo{correct numbering}
-    Initiate notifier/interrupt to be raised every time a new message would come.
+    \item Initiate notifier/interrupt to be raised every time a new message would come.
     \item Encapsulate CAN session object so it can be passed around the code by reference.
     \item Execute the code servicing the CAN messages on FPGA (and passes it to RT processor).
     \item Wait to ensure that the FPGA was fully initiated by the time this function exits.
@@ -220,7 +218,7 @@ it can easily be describe in a few consecutive points:
     \item Wait for ignition button (marked TS - Tractive System) to be pressed and blink it as acknowledge upon push.
     \item Get BMS into load mode (further described in next section) and turn traction active indicator on upon success.
     \item Wait for ready to drive (RTD) button to be pressed.
-    \item Turn motor controllers into drive mode (further described in section \todo{ref}).
+    \item Turn motor controllers into drive mode (further described in section \ref{sec:into_drive_mode}).
     \item In case of success turn on the RTD indicator and send command to audio-visual subsystem to make ready to drive notification sound.
 \end{enumerate}
 
@@ -249,7 +247,7 @@ While contacting with BMS I firstly ensure that BMS is in initial mode by checki
 
 Reasoning behind this sequence has been described in BMS manual \cite{BMS_manual}.
 
-\paragraph{Boot motor controller}
+\paragraph{Boot motor controller} \label{sec:into_drive_mode}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=\visc,max width=\textwidth]{figures/Boot_Motor_Controlerd}
@@ -332,9 +330,8 @@ To counteract this unlikely event a watchdog like functionality has been impleme
     \caption{Update\_motors\_target\_values.vi}
     \label{vi:Update_motors_target_values}
 \end{figure}
-It is done in the manner that whenever \textit{Update\_motors\_target\_values.vi} is called it waits for notification. Then based current motors status and sensors value the target torque for each wheel is calculated (\todo{ref low level}). The communication object semaphore for one motor controller is obtained, value updated and semaphore released and the same is repeated for the other controller.
+It is done in the manner that whenever \textit{Update\_motors\_target\_values.vi} is called it waits for notification. Then based current motors status and sensors value the target torque for each wheel is calculated (\ref{sec:trq_per_wheel_calc}). The communication object semaphore for one motor controller is obtained, value updated and semaphore released and the same is repeated for the other controller.
 
-\\
 
 \paragraph{Motor status} is obtained on each 100 ms by the call to Pool\_motor\_status.vs (fig. \ref{vi:Pool_motor_statusd}) which works in very similar manner to the way the target values are updated.
 \begin{figure}[H]
@@ -353,7 +350,7 @@ Last but not least during the drive mode the pumps are controlled by the code sh
     \label{pumps_service}
 \end{figure}
 What is happening in the code is that pumps are set to full power for first 3s (initialise spin) and the loop is started which updates pumps duty cycle based speed and motor temperatures on each 100ms.
-The update is done by call to \textit{Control\_Pump\_Power\-\_(acc\_and\_temp).vi} which simply calculates desired duty cycle and sends the message to pump controller (VIs further described in \todo{ref}).
+The update is done by call to \textit{Control\_Pump\_Power\-\_(acc\_and\_temp).vi} which simply calculates desired duty cycle and sends the message to pump controller (VIs further described in \ref{sec:CAN_wrapping}).
 \begin{figure}[H]
     \centering
     \includegraphics[scale=\visc,max width=\textwidth]{figures/Control_Pump_Power_(acc_and_temp)d_e}
@@ -409,7 +406,7 @@ The same procedure has been followed has been followed in all the files includin
     \label{vi:Motor_to_TDMS}
 \end{figure}
 
-\subsection{SDO wrappers}
+\subsection{SDO wrappers}\label{SDO_wrappers}
 CANOpen SDO object are accessed by their address and field number. Although, it is clear enough to machine, the user might have problem to understand for example why we are sending 15 to address 0x6040. To make the code readable and possible to use/develop without manual I had been writing the wrapping functions for SDO objects.
 
 Lets take for example node ID which resides in SDO address 0x100B. To make it accessible I have written simple getter \textit{Get\_Node\_ID.vi} and setter \textit{Set\_Node\_ID.vi} (fig. \ref{vi:set_get_nodeid}).
@@ -424,7 +421,7 @@ Lets take for example node ID which resides in SDO address 0x100B. To make it ac
     \caption{Node ID getter/setter}
     \label{vi:set_get_nodeid}
 \end{figure}
-I have wrote it for all used parameters and then encapsulated it into two polymorphic VI. Therefore accessing each parameter is as simple as taking \textit{Get\_SDO.vi} or \textit{Set\_SDO.vi} and choosing the name of parameter from the list as shown in figure \todo{sdo list}.
+I have wrote it for all used parameters and then encapsulated it into two polymorphic VI. Therefore accessing each parameter is as simple as taking \textit{Get\_SDO.vi} or \textit{Set\_SDO.vi} and choosing the name of parameter from the list.% as shown in figure \todo{sdo list}.
 This said I have also wrote a bit more complex setters/getters. For example \textit{Set\_Controlword.vi} (fig. \ref{vi:Set_Controlword}) allows user to choose control world by its name instead of binary notation.
 \begin{figure}[H]
     \centering
@@ -460,7 +457,7 @@ There are also functions which further encapsulates above mentioned complex impl
     \label{vi:Set_into_drive_mode}
 \end{figure}
 
-\subsection{CAN message wrapping}
+\subsection{CAN message wrapping} \label{sec:CAN_wrapping}
 In the same manner as SDO also the CAN messages has been wrapped. However, due to smaller quantity of them I have chosen to more freely adapt them to the places they are called. Therefore there is no one polymorphic VI containing the list of functionality.
 Instead functions has to be called directly by their VIs. This is minor disadvantage, however it greatly simplifies usage.
 
@@ -543,7 +540,7 @@ If no message has been found it waits for notification in the same manner as rea
 This VI simply check if there is no message in queue array, waits for new CAN frame notification and returns message to come.
 
 \subsection{Calculation utilities}
-\subsubsection{Differential disproportion}
+\subsubsection{Differential disproportion} \label{sec:trq_per_wheel_calc}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=\visc,max width=\textwidth]{figures/Calculate_differential_torque_disproportiond}

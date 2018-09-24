@@ -89,7 +89,7 @@ The pedal position has been changed by $1\%$ on each second as shown in \ref{tor
 
 As expected torque output from the system was a reflection of pedal positions as long as the wheels did not spin and for speeds from $10-20 km/h$ we can observe linear dependency between pedal and speed. Then for the speeds above $20km/h$ there is simple torque control so the wheels (without load) starts to gain speed in exponential tempo.
 
-To put in the bigger picture let me refer to the theoretical model (\ref{regen_ideal}). In the figure \ref{torq_anal} I present the measured output using the idealised model as the background. 
+To put in the bigger picture let me refer to the theoretical model (\ref{fig:regen_ideal}). In the figure \ref{torq_anal} I present the measured output using the idealised model as the background. 
 
 
 \begin{figure}[h]
@@ -140,7 +140,7 @@ Meanwhile, the summarised version can be seen in figure \ref{diff_sum}.
     \label{diff_sum}
 \end{figure}
 
-As one can notice in \ref{diff_sum_b} motor torque difference is linearly proportional to acceleration pedal and steering wheel displacement. This relation is clearly maintained for first $\~80\%$ of pedal travel and it saturates on torque difference equal about $42\%$ in rest of the scale. It is the desired behaviour of this control. To explain all the values let me refer to equations \ref{diff_eq} and \ref{diff_eq_w} from the theory section.
+As one can notice in \ref{diff_sum_b} motor torque difference is linearly proportional to acceleration pedal and steering wheel displacement. This relation is clearly maintained for first $\sim80\%$ of pedal travel and it saturates on torque difference equal about $42\%$ in rest of the scale. It is the desired behaviour of this control. To explain all the values let me refer to equations \ref{diff_eq} and \ref{diff_eq_w} from the theory section.
 
 In the vehicle, I have been working on has the maximum steering angle of 36°, wheelbase 1740mm and track equal to 1270mm. Taking these values together into mentioned equations results in wheel disproportion: 
 
@@ -161,11 +161,10 @@ Where:
 
 \begin{wrapfigure}{!r}{0.5\textwidth}
     \vspace{-20pt}
-    \begin{center}
-        \includegraphics[width=0.46\textwidth]{figures/diff_123}
-        \label{diff_123}
-        \caption{Motors torque compassion for steering wheel rotated 124° (maximum steering angle) left}
-    \end{center}
+    \centering
+    \includegraphics[width=0.46\textwidth]{figures/diff_123}
+    \caption{Motors torque compassion for steering wheel rotated 124° (maximum steering angle) left}
+    \label{diff_123}
     \vspace{-20pt}
 \end{wrapfigure}
 So taking into consideration maximum steering angle it becomes active for $d_{acc} \approx 78.91\%$ which can been seen in figure \ref{diff_sum_b}.
@@ -185,8 +184,8 @@ Place where the timing is the most important is in between receiving of pedal/st
 \begin{figure}[h]
     \centering
             \includegraphics[width=0.8\textwidth]{figures/perf_rep.eps}
-            \label{perf_over}
             \caption{CAN and CANOpen timing overview}
+            \label{perf_over}
 \end{figure}
 
 As shown in the figure \ref{perf_over} there are messages on the CAN bus which appears within a constant interval of about $6,8 ms$. Each of these messages contains break, accelerator and steering wheel position and the timing is close to one estimated in method chapter (\ref{pedal_ideal_time}) of $5,2 ms$.
@@ -195,7 +194,7 @@ Each sensors position message is closely followed by four messages on CANOpen bu
 \begin{figure}[h]
     \centering
             \includegraphics[width=0.8\textwidth]{figures/perf.eps}
-            \label{perf}
             \caption{Control torque loop timing}
+            \label{perf}
 \end{figure}
 As shown in figure \ref{perf} after receiving it takes just $~1.11 ms$ to first respond and second respond is sent in $~0.89 ms$ after. As in the code, two calls to LabVIEW closed library responsible for CANOpen communication are issued one after another, it suggests that in both cases about $0.89 ms$ is taken to just send a message. Therefore I am convinced that CAN receive code, interrupt issue it service and torque calculations take only about $0.22 ms$ of total time.

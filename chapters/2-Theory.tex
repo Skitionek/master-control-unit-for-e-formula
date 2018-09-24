@@ -13,20 +13,28 @@
 
 \section{Calculations for differential based on steering angle} \label{diff_calc}
 
-Due to the racing character, the vehicle was built with a parallel steering mechanism. Considering the dynamics of the vehicle in high speeds during the turn the outer wheel works under presumably higher load, therefore, having smaller slip angle than a relieved inner wheel. In a well-designed parallel steering system, these forces should cancel each other therefore we can make the calculations based on two wheels model with unchanged steering angle.\cite{vehicle_dyna}
+Due to the racing character, the vehicle was built with a parallel steering mechanism. This kind of steering is optimised accordingly to dynamics of the vehicle in high speeds. During the turn the outer wheel works under presumably higher load, therefore, having smaller slip angle than a relieved inner wheel. In a well-designed parallel steering system, these forces should cancel each other therefore we can make the calculations based on two wheels model with unchanged steering angle.\cite{vehicle_dyna}
 In this model, we can simply calculate the radius of turn measuring from the rear axle by trigonometric equation \ref{diff_eq_w}.
 
-\begin{equation}\label{diff_eq_w}
-    R = cot( \gamma ) * w
-\end{equation}
-Where:
-\begin{description}
-    \item[$R$] rear axis radius (from the middle of the axis to pivot point)
-    \item[$\gamma$] steering angle
-    \item[$w$] wheelbase
-\end{description}
+\vspace{1em}
+\begin{minipage}{0.6\textwidth}
+    \begin{equation}\label{diff_eq_w}
+        R = cot( \gamma ) * w
+    \end{equation}
+    Where:
+    \begin{description}
+        \item[$R$] rear axis radius (from the middle of the axis to pivot point)
+        \item[$\gamma$] steering angle
+        \item[$w$] wheelbase
+    \end{description}
+\end{minipage}
+\hfill
+\begin{minipage}{0.35\textwidth}
+    \includegraphics[width=\textwidth]{figures/diff_calc}
+\end{minipage}
+\vspace{1em}
 
-Now moving back to four wheel model, since the radius is directly proportional to circumference we can calculate the proportions of how fast should wheels rotate in compare to consider rear wheel from previous model. This can be done by simply adding half of rear track to calculated radius and divide by it.
+Now moving back to four wheel model, since the radius is directly proportional to circumference we can calculate the proportions of how fast should wheels rotate in compare to consider rear wheel from previous model. This can be done by simply adding half of rear track to calculated radius and divide by itself.
 % \begin{equation}
 %     inner~wheel~proportional~speed = \frac{rear~axis~radius - rear~track / 2}{rear~axis~radius}
 % \end{equation}
@@ -56,3 +64,6 @@ These numbers can be successfully used as multiplicands in the differential syst
 \section{Regenerative Breaking} \label{regenerative_theory_section}
 
 As explained in \cite{low_speed_regenerative_breaking} and confirmed in \cite{regen_strategy} it is not feasible to use the regenerative braking for the vehicle driving with the low speed. As the motors would generate a too small voltage to be converted up and charge the battery.
+As the result the regenerative breaking should be a function of vehicle speed.
+
+\todo{ref some research?}

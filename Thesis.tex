@@ -8,7 +8,6 @@
 \papersizeswitch{b5paper}{\def\classfontsize{10pt}}{\def\classfontsize{12pt}}
 
 \documentclass[\classfontsize,\papersize,twoside,showtrims,extrafontsizes]{memoir}
-
 %%%%%%%%%%%
 % my packages
 \usepackage{wrapfig}
@@ -20,6 +19,8 @@
 \usepackage{enumitem}
 \usepackage{caption}
 \usepackage[export]{adjustbox}
+\feetbelowfloat
+\def\showtodos{false}
 %%%%%%%%%%%
 
 \input{preamble/general}
@@ -34,12 +35,13 @@
 \include{prefrontmatter/titlepage}
 \cleartoevenpage
 \include{prefrontmatter/colophon}
+% \include{preamble/KAIST_titlepage}
 \clearforchapter
 
 \frontmatter
 \include{frontmatter/Abstract}
 \include{frontmatter/Preface}
-\include{frontmatter/Acknowledgements} \todo{}
+\include{frontmatter/Acknowledgements} 
 \clearforchapter
 \tableofcontents
 \clearforchapter
