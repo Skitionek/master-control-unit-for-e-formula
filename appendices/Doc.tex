@@ -9,7 +9,7 @@ The program is designed to be started by running main.vi (which is happening upo
 \end{figure}
 
 It is a sequence of stages which for simplicity I will call "Initialisation", "Operation" and "Closing". Out of 3, the last one has no complexity to be explained, its only function is to close the log file. 
-I have tried to reflect each level of functionality nesting by the document structure Section->Subsection->Subsection->Paragraph etc. However, to avoid overwhelmingly deep nest structure I have elevated description of "Vehicle control - drive" from point \ref{sec:veh_contr} to separate section. Also I used the last section to describes low level functions which has been used in the whole project.
+I have tried to reflect each level of functionality nesting by the document structure Section->Subsection->Subsection->Paragraph etc. However, to avoid an overwhelmingly deep nest structure I have elevated description of "Vehicle control - drive" from point \ref{sec:veh_contr} to separate section. Also I used the last section to describes low level functions which have been used in the whole project.
 
 \section{Initialisation}
 \begin{wrapfigure}{l}{0.33\textwidth}
@@ -60,7 +60,7 @@ Additionally to acquiring the file handle the code also spawns semaphore to be u
 Just after opening the log handle the current state of the device is saved.
 \\ \\
 Last but not least the Initialise\_cRIO.vi call the functions to start communication responsible sub-modules (CAN Session and CANOpen Session).
-\subsubsection{Initialise CANOpen Session}
+\subsubsection{Initialise CANOpen Session}\label{sec:open_CAN}
 \begin{figure}[h]
     \centering
     \includegraphics[scale=\visc,max width=\textwidth]{figures/Open_CANOpen_Sessiond}
@@ -83,14 +83,14 @@ Implementation would hard to discuss as whole so figure \ref{vi:Open_CAN_Session
     \item Array with entity for each message ID is created, as for the point of time it is filled with zero references to queues capable of containing CAN Frames\footnote{CAN Frame (instead of CAN frame) is used to signal that it refers to the data structure, not physical signal pattern} (queue with the data type set to be a CAN Frame).
     \item Initiate notifier/interrupt to be raised every time a new message would come.
     \item Encapsulate CAN session object so it can be passed around the code by reference.
-    \item Execute the code servicing the CAN messages on FPGA (and passes it to RT processor).
+    \item Execute the code servicing the CAN message on FPGA (and passes it to RT processor). Which has been further described in \ref{CAN_communication}.
     \item Wait to ensure that the FPGA was fully initiated by the time this function exits.
 \end{enumerate}
 
 \section{Operation}
 Whenever all values and services are initialised device move into operational state and logs this change.
-This stage defines all the tasks running in parallel during device operation. To start with the error logging loop is started so in case of any failure, it would be possible to reason of what has happened. 
-For instant feedback whenever a remote panel is not connected the diode of cRIO is made to blink within an interval of 1,5s (50$\%$ duty cycle), changing its colour to orange for 5s seconds whenever the error has been encountered.\label{cRIO_LED}
+This stage defines all the tasks running in parallel during device operation. To start with the error logging loop is started so in case of any failure, it would be possible to reason out what has happened. 
+For instant feedback whenever a remote panel has not been connected the diode of cRIO is made to blink within an interval of 1,5s (50$\%$ duty cycle), changing its colour to orange for 5s seconds whenever the error has been encountered.\label{cRIO_LED}
 
 \subsection{Shutdowns}
 Then the shutdown functions are described as follows.
@@ -149,7 +149,7 @@ For the time of development and whenever the program is run within a remotely co
 
 One of the important indicators is the live number of interrupts to update motor values. Also, errors, if any, are shown in pleasant to use list. However, different functionality plays a key role in here.
 
-In the remote session, I have provided visual indicators for subsystems. Moreover, I have provided bindings so the devices can be using a real data or be simulated.
+In the remote session, I have provided visual indicators for subsystems. Moreover, I have provided bindings so the devices can be using real data or be simulated.
 
 \begin{figure}[h]
     \centering
@@ -214,12 +214,12 @@ Starting code has been shown in figure \ref{vi:boot_sequence}
 it can easily be describe in a few consecutive points:
 \begin{enumerate}
     \itemsep0.1em 
-    \item Firstly it tries\footnote{within 1s timeout, after which default values are assumed. Error would be not crucial for functioning of vehicle so it is ignored} to read state of charge form low voltage and main BMS based on which dashboard indicators are updated.
+    \item Firstly it tries\footnote{within 1s timeout, after which default values are assumed. The error would be not crucial for the functioning of vehicle so it is ignored} to read the state of charge form low voltage and main BMS based on which dashboard indicators are updated.
     \item Wait for ignition button (marked TS - Tractive System) to be pressed and blink it as acknowledge upon push.
     \item Get BMS into load mode (further described in next section) and turn traction active indicator on upon success.
     \item Wait for ready to drive (RTD) button to be pressed.
     \item Turn motor controllers into drive mode (further described in section \ref{sec:into_drive_mode}).
-    \item In case of success turn on the RTD indicator and send command to audio-visual subsystem to make ready to drive notification sound.
+    \item In case of success turn on the RTD indicator and send a command to the audio-visual subsystem to make ready to drive notification sound.
 \end{enumerate}
 
 \paragraph{Turning on BMS}
@@ -245,7 +245,7 @@ it can easily be describe in a few consecutive points:
 \end{figure}
 While contacting with BMS I firstly ensure that BMS is in initial mode by checking its status. Then BMS is requested to turn on into load mode withing ~20ms interval until the pre-charge process is done. Then BMS is moved to staging process and active load letter one.
 
-Reasoning behind this sequence has been described in BMS manual \cite{BMS_manual}.
+The reasoning behind this sequence has been described in BMS manual \cite{BMS_manual}.
 
 \paragraph{Boot motor controller} \label{sec:into_drive_mode}
 \begin{figure}[H]
@@ -270,12 +270,12 @@ Whenever the controllers are finally operational the SDO communication object ha
 \vspace{1em}
 \noindent\fbox{%
     \parbox{0.98\textwidth}{%
-        For simplicity and to emphasise importance the sub-subsection "Vehicle control - drive" has been moved from its logical placement in here to separate section.
+        For simplicity and to emphasise the importance the sub-subsection "Vehicle control - drive" has been moved from its logical placement in here to separate section.
     }%
 }
 
 \section{Vehicle control - drive}
-To start with event of entering the next state is saved into log file and the LED indicator pattern is changed (v.s.\ref{cRIO_LED}). The vehicle control for its drive mode spawns additional loops in parallel the the ones already started during initialisation.
+To start with an event of entering the next state is saved into the log file and the LED indicator pattern is changed (v.s.\ref{cRIO_LED}). The vehicle control for its drive mode spawns additional loops in parallel the the ones already started during initialisation.
 
 \subsection{Logging}
 Two of them are simply responsible for logging the device state (figure \ref{logging}).
@@ -286,10 +286,10 @@ Two of them are simply responsible for logging the device state (figure \ref{log
     \label{logging}
 \end{figure}
 Logging has been made in loops with non-deterministic timing where the current motor, pedal status and the associated control values are saved withing interval of 200ms.
-Whereas slow changing signals as pump status is saved on each second and the batteries state is logged with period of 10s.
+Whereas slow-changing signals as pump status is saved on each second and the batteries state is logged within the period of 10s.
 
 \subsection{Service BMS}
-Then there are loops to read (and update local value) of low voltage BMS status and react to its error. As well as one to read main BMS status.
+Then there are loops to read (and update local value) of low voltage BMS status and react to its error. As well as one to read the main BMS status.
 \begin{figure}[H]
     \centering
     \includegraphics[scale=\visc,max width=\textwidth]{figures/Read_BMSs.png}
@@ -306,7 +306,7 @@ Additionally this loop has been used to actually sense if the BMS is in load mod
 \end{figure}
 
 \subsection{Service steering wheel and pedals updates}
-Pedals service beside simply receiving status messages and issuing messages to motors had to be enforced for the case when the communication is lost. Especially dangerous example is if accelerator pedal would be pressed down while communication got lost.
+Pedals service besides simply receiving status messages and issuing messages to motors had to be enforced for the case when the communication is lost. An especially dangerous example is if accelerator pedal would be pressed down while communication got lost.
 In the most simple approach car would keep accelerating until reaching to speed or it has been turned off.
 \begin{figure}[H]
     \centering
@@ -358,9 +358,9 @@ The update is done by call to \textit{Control\_Pump\_Power\-\_(acc\_and\_temp).v
     \label{vi:Control_Pump_Power_(acc_and_temp)}
 \end{figure}
 
-\section{Low level API}
+\section{ Low-level API}
 \subsection{Logging}
-In quiet few places I have been using a special functions to log data, especially logging application state has been used through the whole application.
+In quiet few places, I have been using special functions to log data, especially logging application state has been used through the whole application.
 I have written 5 logging functions where all of them follows the same pattern.
 \begin{figure}[h]
     \centering
@@ -396,7 +396,7 @@ I have written 5 logging functions where all of them follows the same pattern.
     }
     \caption{Logging functions}
 \end{figure}
-The semaphore for log file is acquired, then the data is save to TDMS file along with current time-stamp and semaphore is released. What is probably worth to mention is the split into few calls for TDMS write. The reason for it is that on single write only the array containing one type of data can be written, if one would try for instance write 8bit value along with 64bit one both would be saved as 64 numbers. To avoid this but also possibly limit the calls values has been grouped into arrays of the same type. For instance in \textit{Log\_Betteries.vi} first time-stamp is saved (it has corresponding type in TDMS format), then the array of 8bit values from low voltage BMS, soon after follows Boolean array from BMS status and last but not least two 32-bit values from battery status.
+The semaphore for the log file is acquired, then the data is saved to TDMS file along with current time-stamp and semaphore is released. What is probably worth to mention is the split into few calls for TDMS write. The reason for it is that on single write only the array containing one type of data can be written if one would try for instance write 8bit value along with 64bit one both would be saved as 64 numbers. To avoid this but also possibly limit the calls values have been grouped into arrays of the same type. For instance in \textit{Log\_Betteries.vi} first, time-stamp is saved (it has the corresponding type in TDMS format), then the array of 8bit values from low voltage BMS, soon after follows Boolean array from BMS status and last but not least two 32-bit values from battery status.
 
 The same procedure has been followed has been followed in all the files including \textit{Log\_Motors.vi} where it has been implemented in separate file to avoid duplication - \textit{Motor\_to\_TDMS.vi} (fig. \ref{vi:Motor_to_TDMS}).
 \begin{figure}[H]
@@ -407,7 +407,7 @@ The same procedure has been followed has been followed in all the files includin
 \end{figure}
 
 \subsection{SDO wrappers}\label{SDO_wrappers}
-CANOpen SDO object are accessed by their address and field number. Although, it is clear enough to machine, the user might have problem to understand for example why we are sending 15 to address 0x6040. To make the code readable and possible to use/develop without manual I had been writing the wrapping functions for SDO objects.
+CANOpen SDO object is accessed by their address and field number. Although it is clear enough to machine, the user might have a problem to understand for example why we are sending 15 to address 0x6040. To make the code readable and possible to use/develop without a manual I had been writing the wrapping functions for SDO objects.
 
 Lets take for example node ID which resides in SDO address 0x100B. To make it accessible I have written simple getter \textit{Get\_Node\_ID.vi} and setter \textit{Set\_Node\_ID.vi} (fig. \ref{vi:set_get_nodeid}).
 \begin{figure}[h]
@@ -458,8 +458,8 @@ There are also functions which further encapsulates above mentioned complex impl
 \end{figure}
 
 \subsection{CAN message wrapping} \label{sec:CAN_wrapping}
-In the same manner as SDO also the CAN messages has been wrapped. However, due to smaller quantity of them I have chosen to more freely adapt them to the places they are called. Therefore there is no one polymorphic VI containing the list of functionality.
-Instead functions has to be called directly by their VIs. This is minor disadvantage, however it greatly simplifies usage.
+In the same manner as SDO also the CAN messages have been wrapped. However, due to a smaller quantity of them I have chosen to more freely adapt them to the places they are called. Therefore there is no one polymorphic VI containing the list of functionality.
+Instead, functions have to be called directly by their VIs. This is a minor disadvantage, however, it greatly simplifies usage.
 
 Simplest CAN message wrapping can be seen in \textit{Set\_Pump\_Power.vi} (fig. \ref{vi:Set_Pump_Power}).
 \begin{figure}[H]
@@ -478,7 +478,7 @@ Other wrappings are clearly adjusted to use cases like \textit{Get\_pedal\_statu
 \end{figure}
 The code except of sending the message contains all the functionality from the containing control loop. So the update motors notification is send, watchdog value is updated and possible error added to queue to be serviced.
 
-There is quiet few more examples but I believe that they are self explanatory.
+There are quite a few more examples but I believe that they are self-explanatory.
 
 \subsection{Read CAN message}
 To make CAN message wrapping possible a few CAN read messages needed to be implemented. The implementation has been wrapped into polymorphic VI which resolves to one of three functions based on connected data.
@@ -515,7 +515,7 @@ All of them exits upon message arrival or due to timeout (with error - fig. \ref
 \end{wrapfigure}
 The code firstly deference the CAN session pointer, then from array of read queues the one with desired ID is taken and checked if it contains an item (firstly checking if the queue exist fig. \ref{vi:Element_in_queue}). This initial check is done to the fact that I do not want to miss a message which can prior to this function call but was not served yet.
 
-If the queue does not contain a message the remaining timeout is calculated as difference of current time-stamp and the time when function was initially called. Then within timeout wait for new CAN frame notification is called and loop is repeated whenever message comes.
+If the queue does not contain a message the remaining timeout is calculated as the difference of current time-stamp and the time when the function was initially called. Then within timeout wait for new CAN frame notification is called and the loop is repeated whenever a message comes.
 
 There is also additional functionality encoded, if the initial timeout is set to be -1 the read function never times out.
 
@@ -528,7 +528,7 @@ There is also additional functionality encoded, if the initial timeout is set to
 \end{figure}
 Read array functions similarly to previous example, the CAN session is referenced and array of IDs is iterated checking if corresponding queues already contains messages (exit on first found).
 
-If no message has been found it waits for notification in the same manner as read single. Upon notification the message ID is decoded from it. If it is one of the desired ones an initial array of IDs is shuffled such that the just arrived ID appears as first one and the function loop back to the first check. 
+If no message has been found it waits for notification in the same manner as for read single. Upon notification, the message ID is decoded from it. If it is one of the desired ones an initial array of IDs is shuffled such that the just arrived ID appears as the first one and the function loop back to the first check. 
 
 \subsubsection{Read all CAN messages}
 \begin{figure}[H]
@@ -548,7 +548,7 @@ This VI simply check if there is no message in queue array, waits for new CAN fr
     \label{vi:Calculate_differential_torque_disproportion}
 \end{figure}
 In point 1, case when steering wheel angle is equal to zero is addressed separately as used equation (\ref{diff_eq_w}) does not have solution in the point ($cot(0)$). In the case simply 1 is returned for both outputs.
-Otherwise the steering wheel position is checked to fall withing its operational limits ($-124\,^{\circ},124\,^{\circ}$). If not error is returned (point 3), position is coerced and calculations are continued.
+Otherwise, the steering wheel position is checked to fall within its operational limits ($-124\,^{\circ},124\,^{\circ}$). If not error is returned (point 3), the position is coerced and calculations are continued.
 
 Point 4 simply follows equations \ref{diff_eq_w} and \ref{diff_eq}.
 
@@ -570,7 +570,7 @@ Point 4 simply follows equations \ref{diff_eq_w} and \ref{diff_eq}.
 \end{wrapfigure}
 \textit{Calculate\_torque\_per\_wheel.vi} encapsulates calculations for differential adding desired scaling in respect to accelerator position, vehicle speed and controls behaviour in case of torque saturation.
 
-In point 1 the average of wheels speeds is calculated and transformed from rpm into km/h. Then speed and accelerator values are normalised (and coerced) within their limits (point 2). As the speed value is coerced within 10-20km/h the equation \ref{reg_break_eq} is simply calculated in point 4 resulting in desired torque percentage (negative value corresponds to regenerative breaking). Up to point 5 values are transformed accordingly to equation \ref{diff_saf} providing safety solution in case of torque saturation. Last but not least torque percentage is multiplied within its maximum allowed value and right wheel is multiplied by -1 so it rotates in the same direction as left one.
+In point 1 the average of wheels speeds are calculated and transformed from rpm into km/h. Then speed and accelerator values are normalised (and coerced) within their limits (point 2). As the speed value is coerced within 10-20km/h the equation \ref{reg_break_eq} is simply calculated in point 4 resulting in desired torque percentage (negative value corresponds to regenerative breaking). Up to point 5 values are transformed accordingly to equation \ref{diff_saf} providing safety solution in case of torque saturation. Last but not least torque percentage is multiplied within its maximum allowed value and the right wheel is multiplied by -1 so it rotates in the same direction as left one.
 
 \subsubsection{Pump power}
 \begin{figure}[H]
@@ -581,4 +581,27 @@ In point 1 the average of wheels speeds is calculated and transformed from rpm i
 \end{figure}
 The calculations simply follows equation \ref{pump_eq} described in \ref{pump_control} section.
 
-\todo{CAN communication}
+\subsubsection{CAN communication}\label{CAN_communication}
+CAN message servicing is done by separate process/threat running on real-time (RT) processor and corresponding code on FPGA. The functionality can be divided into two independent parts writing and reading.
+\paragraph{Writing} is done in the way that each message is taken from "writing queue" and send to FPGA setting the flag "write" to true. While on FPGA is constantly checking the flag, so as soon it arrives message is encoded into the right format and forwarded to CAN sub-module, then the flag is changed to false (fig. \ref{vi:FPGA_Main} - CAN write loop).
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/FPGA_Maind_e}
+    \caption{FPGA\_Main.vi - CAN communication FPGA part}
+    \label{vi:FPGA_Main}
+\end{figure}
+\paragraph{Reading} on the other hand is a far more complicated process. Starting in FPGA's "CAN Read Loop" upon arrival the message is encoded on 6x32bit integers. These values are pushed one by one to FIFO buffer while being read simultaneously in the "RT Acquire from CAN FIFO Loop" (the buffer is used to avoid dropping the messages if in the point of time they cannot be serviced by RT unit).
+
+"RT Acquire from CAN FIFO Loop" for each 6x32bit values encodes them into CAN Frame and raises an interrupt to notify the RT unit that message is ready to be read. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=\visc,max width=\textwidth]{figures/CAN_Communicationd_e}
+    \caption{CAN\_Communication.vi - RT process}
+    \label{vi:CAN_Communication}
+\end{figure}
+In the RT's "CAN Read Loop" upon interrupt (1) the message is read from FPGA output (2) and it is acknowledged (3) so the FPGA can start processing the next one (at the point of time FPGA loop is waiting for this acknowledgement). In the code next to label 4, the CAN session object is dereferenced to acquire the newest values, to be precise the "Read Queue Array" and "New Frame Notifier". As earlier mentioned in \ref{sec:open_CAN} the "Read Queue Array" consist, possibly empty, queue reference for each message ID. So in point 5, the queue associated with just arrived message ID is taken. If the reference is not correct (queue for this message ID was not initialised yet), I am creating a new queue and adding it to proper row in "Read Queue Array". Then the message is enqueued and the new can frame notification sent.
+
+\paragraph{Button pressed}
+Beside this main functionality, the CAN communication mechanism has been also used for side quest - sensing the FPGA button pressed. This button is used to gracefully reset cRIO without having a remote panel connected.
+
+In FPGA the button position is constantly checked and upon press, the interrupt is sent (with different ID than the message one). On RT side this interrupt is encapsulated as a CAN message with ID 0, so the CAN interface can be used to wait for it.

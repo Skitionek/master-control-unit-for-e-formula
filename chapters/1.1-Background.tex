@@ -34,12 +34,12 @@ In the following sections, I will give a brief insight into technical topics rel
 CAN protocol was first used in the car 27 years ago to become international automotive standard just two years later in 1993.\cite{CAN_merc, CAN_1993}
 
 \noindent
-Following precursors in my implementation, a majority of communication from/to central control unit is realised based on Control Area Network (CAN) common, communication protocol used mostly in automotive applications. 
+Following precursors in my implementation, a majority of communication from/to central control unit is realised based on Control Area Network (CAN) common, the communication protocol used mostly in automotive applications. 
 
-I have used it within so far the most common version of psychical layer described in ISO11898-2 and popularly called high speed CAN. This standard allows for data transmission within maximum baud rate up to 1 Mbit/s. To achieve these speeds without errors the signal reflection needs to be considered. In high speed CAN it is achieved by terminating ends of the busses with a matched resistor ($120\Omega$). This tends to be the most noticeable (visible by bare eye) difference over low speed CAN.
+I have used it within so far the most common version of psychical layer described in ISO11898-2 and popularly called high speed CAN. This standard allows for data transmission within a maximum baud rate up to 1 Mbit/s. To achieve these speeds without errors the signal reflection needs to be considered. In high speed CAN it is achieved by terminating ends of the busses with a matched resistor ($120\Omega$). This tends to be the most noticeable (visible by bare eye) difference over low speed CAN.
 
 \paragraph{CAN Frame}
-Speaking about the protocol, in CAN, each arbitrary data needs to be encapsulated into data frames. Each od CAN frames is capable to transmitting a variable number of bytes (up to 8 per frame) and consist of the following fields:
+Speaking about the protocol, in CAN, each arbitrary data needs to be encapsulated into data frames. Each of CAN frames is capable to transmitting a variable number of bytes (up to 8 per frame) and consist of the following fields:
 \begin{table}[H]
 \begin{tabular}{|p{0.2\textwidth}|p{0.13\textwidth}|p{0.58\textwidth}|}
 \hline
@@ -122,10 +122,10 @@ This functionality has been called "servicing data object" (SDO) and follows hie
 
 In case that overhead is not tolerable CANOpen allows to map data in the dictionary into "process dictionary object" (PDO). These are messages acting in the same way as raw CAN, being at the same time easily adjustable and having a set of triggering methods, like:
 \begin{itemize}
-	\item value change
-	\item timer overflow
-	\item device internal event
-	\item respond to a request; respond to synchronisation message (SYNC)
+    \item value change
+    \item timer overflow
+    \item device internal event
+    \item respond to a request; respond to synchronisation message (SYNC)
 \end{itemize}
 
 \begin{wrapfigure}{L}{0.33\textwidth}

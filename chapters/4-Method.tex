@@ -33,7 +33,7 @@ Among many available options in our final setup we have used:
     \item Two EMRAX228 motors where each of them is capable to work within continuous power of $28-42kW$\footnote{exact value depends on motor RPM}\cite{emrax_manual}
     \item Two emDrive500 controllers, implementing CANOpen protocol and being capable to make full usage of AM motors
     \item Arduino with CAN shields to act as intelligent sensors/controllers
-    \item Two IWAKI direct drive pumps (RD-40E24-HN1V) for cooling purposes \todo{flow params?}
+    \item Two IWAKI direct drive pumps (RD-40E24-HN1V) for cooling purposes %\todo{flow params?}
     % \begin{wrapfigure}
     %     \includegraphics[width=0.33\textwidth]{figures/Pump.pdf}
     % \end{wrapfigure}
@@ -47,7 +47,7 @@ This result in the system which in a simplified manner has been presented in fig
     \includegraphics[width=\textwidth]{figures/Whole_with_details.pdf}
     \caption{Architecture overview}
     \label{fig:whole}
-\end{figure}\todo{12V next to CAN + dashboard + LV to emc}
+\end{figure}
 
 To start with in the left corner the breaking light has been shown, it operates on the 12V line and provides two levels of intensity (two sets of LEDs controlled independently). The control is based directly on CAN message send by pedals controller, providing additional functionality of lighting up if the connection is lost and blinking if pedals are sending the error messages.
 To the right, we can see electrical buzzer (which is being used as ready to drive signal) and cooling pumps taking the same 12V and being controlled by a signal in between 0 and 5V. These all have been connected to the system by CAN adapter in the rear part of the car.
@@ -142,17 +142,16 @@ Usage of this protocol caused a drastic drop in channel throughput considering f
 \caption{Motor controller status component sizing}
 \end{table}
 
-As each PDO message can contain up to 8 bytes aforementioned list of parameters would need to be divided into 3 CAN frames and as an result $46bits*3+19bytes+\epsilon = 290 bits +\epsilon$  \hspace{0.2cm}\footnote{\label{foot:eps}$\epsilon$ has been used to represent stuffed bits} needs to be send. On the other hand sending the same data with SDO protocol requires request-respond schema for each value so $46bits*18 + 19bytes + 9*4bytes + \epsilon = 1268 bits + \epsilon$ \hspace{0.2cm} \ref{foot:eps} needs to be send.
+As each PDO message can contain up to 8 bytes aforementioned list of parameters would need to be divided into 3 CAN frames and as an result $47bits*3+19bytes+\epsilon = 293 bits +\epsilon$  \hspace{0.2cm}\footnote{\label{foot:eps}$\epsilon$ has been used to represent stuffed bits} needs to be send. On the other hand sending the same data with SDO protocol requires request-respond schema for each value so $47bits*18 + 19bytes + 9*4bytes + \epsilon = 1286 bits + \epsilon$ \hspace{0.2cm} \ref{foot:eps} needs to be send.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/CANOpen_vs_CAN}
-    \caption{CANOpen vs CAN}
+    \includegraphics[width=0.9\textwidth]{figures/CANOpen_vs_CAN}
+    \caption{CAN vs CANOpen's SDO}
     \label{fig:canopen_bitwise}
 \end{figure}
-    \todo{enrich it by missing fields}
 
-Furthermore, also the target torque off motor controllers needs to be adjusted SDO messages. In this case, performance drawback is even more visible, if the PDO protocol could be used torque values could be sent together within one CAN frame ($46bits+4bytes=78 bits$), however, within SDO 4 CAN frames needs to be sent ($46bits*4+4bytes+4bytes*2=280bits$).
+Furthermore, also the target torque off motor controllers needs to be adjusted SDO messages. In this case, performance drawback is even more visible, if the PDO protocol could be used torque values could be sent together within one CAN frame ($47bits+4bytes=79 bits$), however, within SDO 4 CAN frames needs to be sent ($47bits*4+4bytes+4bytes*2=284bits$).
 
 \subsection{Device operation states}
 

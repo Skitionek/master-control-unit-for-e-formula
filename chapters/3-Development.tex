@@ -58,7 +58,7 @@ Concurrently, also the BMS arrived so I have made a physical connection and powe
 \mbox{}\\
 In the mid-May just a week after the arrival of the NI9881 module and receiving a working peripheral prototype, I had both protocols running. I started by implementing a basic logging feature and tried to control the state of the motor controller. 
 
-Although basic communication was set there was still a lot of work to be done, I dedicated my time to setup configuration of motor controller and write the library(\ref{SDO_wrappers}) to be able to control it in convenient, declarative way.
+Although basic communication was set there was still a lot of work to be done, I dedicated my time to set up a configuration of the motor controller and write the library(\ref{SDO_wrappers}) to be able to control it in convenient, declarative way.
 It was a great challenge as controller documentation was incomplete and momentary misleading. First of all, I found the way to set up the parameters, however from there to spin up the motors the path was not so straightforward. 
 The motor controller uses two parallel state machines, one which is based on CANOpen standard and second which has been implemented by the manufacturer (\ref{fig:em500_states}). 
 \begin{figure}[H]
@@ -66,13 +66,13 @@ The motor controller uses two parallel state machines, one which is based on CAN
     \includegraphics[width=0.8\textwidth]{figures/em500_state}
     \caption{emDrive500 states machines correlation}
     \label{fig:em500_states}
-\end{figure}\todo{correct arrow colour to op en}
+\end{figure}
 Although, it is not described in the manual these two state machines are correlated. After many, many tries I decided to closely follow the steps I found in an unofficial manual. It turned out to be a successful approach. 
 
-In figure \ref{fig:em500_states} I have marked by red arrows the only way to boot device into the operational state. Moreover, what could not be shown in the figure in CANOpen's pre-operational state not officially documented parameter\footnote{Currently available manual does not provide description for objects with addresses starting with 0x3000} needed to be set to choose control mode (torque/speed). This founding allowed me to make a step forward, by being able to spin the motor.
+In figure \ref{fig:em500_states} I have marked by red arrows the only way to boot device into the operational state. Moreover, what could not be shown in the figure in CANOpen's pre-operational state not officially documented parameter\footnote{Currently available manual does not provide a description for objects with addresses starting with 0x3000} needed to be set to choose control mode (torque/speed). This funding allowed me to make a step forward, by being able to spin the motor.
 Advancing the testing program lead me to the point where to reduce protocol overhead I implemented control based on default PDO messages. It has been able to read motor controller status within an interval of one millisecond, simultaneously controlling the target speed.
 
-Counting it as success I moved my focus towards communication with other peripherals. I got delivered a very first version of the pedal position smart sensor but it has not been at the time working properly.
+Counting it as the success I moved my focus towards communication with other peripherals. I got delivered a very first version of the pedal position smart sensor but it has not been at the time working properly.
 \begin{itemize}
     \item In case of errors random position values were send
     \item There was no documentation about how errors are encoded (little/big-endian, byte order)
@@ -81,10 +81,10 @@ Counting it as success I moved my focus towards communication with other periphe
 \end{itemize} 
 I took my time and tried to debug/improve it with a responsible team. After many iterations, we finally came up with a solution which did not have any of the above-mentioned problems.
 
-Willing to integrate all implementations so far and start working on an electrical differential setup I have tried to control two motors simultaneously. This seemingly small step turned out to be a problematic in implementation.
+Willing to integrate all implementations so far and start working on an electrical differential setup I have tried to control two motors simultaneously. This seemingly small step turned out to be problematic in implementation.
 As the control of motors has been based on PDO protocol to be capable to control two motors independently on the same bus the message IDs of at least one motor controller needed to be changed. I have written the code to do so, however it did not work as desired. Being completely confused I spend few days debugging the issue. 
-It turned out, although, proper commands have been issued the controller would just accept them without changing anything. I had a hard time to believe that the device might malfunction this way yet there was no other explanation. Therefore, I contacted the manufacturer which right away admit that he is aware of this software bug and provided instruction and new software version to solve the issue. However that was not the end of the problems.
-After the software was uploaded the device stopped booting so just two and half weeks before competition it needed to be sent for repair. It has been done within about the week, however, POD protocol remain unusable.
+It turned out, although, proper commands have been issued the controller would just accept them without changing anything. I had a hard time to believe that the device might malfunction this way yet there was no other explanation. Therefore, I contacted the manufacturer which right away admit that he is aware of this software bug and provided instruction and new software version to solve the issue. However, that was not the end of the problems.
+After the software was uploaded the device stopped booting so just two and half weeks before competition it needed to be sent for repair. It has been done within about the week, however, POD protocol remains unusable.
 To overcome this problem in place of PDO commands the slower SDO protocol has been used. Although message frequency needed to be limited, this solution proved to provide just sufficient performance.
 
 About the time also I have been helping with pump controlling module and worked on gathering everything into the consistent system which has been comprehensively described in the next chapter.
