@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="$lang$" xml:lang="$lang$"$if(dir)$ dir="$dir$"$endif$>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+$for(author-meta)$  <meta name="author" content="$author-meta$" />
+$endfor$
+$if(date-meta)$  <meta name="dcterms.date" content="$date-meta$" />
+$endif$
+$if(keywords)$  <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
+$endif$
+  <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --dtu-red:   #990000;
+      --accent:    #cc0000;
+      --dark:      #1a1a1a;
+      --muted:     #555;
+      --border:    #ddd;
+      --bg:        #fdfdfd;
+      --sidebar-w: 260px;
+      --radius:    6px;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--dark);
+      font-family: Georgia, 'Times New Roman', serif;
+      line-height: 1.7;
+    }
+
+    /* ── Top bar ── */
+    #top-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--dtu-red);
+      color: #fff;
+      padding: 0.6rem 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    #top-bar h1 {
+      font-size: 1rem; font-weight: 600; margin: 0; font-family: Arial, sans-serif;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #top-bar .badge {
+      font-size: 0.72rem; background: rgba(255,255,255,.2);
+      border-radius: 20px; padding: 0.2rem 0.7rem; white-space: nowrap;
+    }
+    #toc-toggle {
+      display: none;
+      background: none; border: 1.5px solid rgba(255,255,255,.6); color: #fff;
+      border-radius: 4px; padding: 0.25rem 0.6rem; cursor: pointer; font-size: 0.85rem;
+      margin-left: auto;
+    }
+
+    /* ── Layout ── */
+    #layout {
+      display: flex;
+      min-height: calc(100vh - 3rem);
+    }
+
+    /* ── Sidebar (TOC) ── */
+    #toc-sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: #f5f5f5;
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 1rem;
+      position: sticky;
+      top: 3rem; /* height of top-bar */
+      height: calc(100vh - 3rem);
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      font-size: 0.82rem;
+    }
+    #toc-sidebar h2 {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--muted); margin: 0 0 0.8rem; font-weight: 700;
+    }
+    #toc-sidebar #TOC ul { list-style: none; padding-left: 0.8rem; margin: 0; }
+    #toc-sidebar #TOC > ul { padding-left: 0; }
+    #toc-sidebar #TOC li { margin: 0.25rem 0; }
+    #toc-sidebar #TOC a {
+      color: var(--dark); text-decoration: none; display: block;
+      padding: 0.15rem 0.3rem; border-radius: 3px; transition: background .15s, color .15s;
+    }
+    #toc-sidebar #TOC a:hover { background: var(--dtu-red); color: #fff; }
+
+    /* ── Main content ── */
+    #content {
+      flex: 1;
+      max-width: 800px;
+      padding: 2.5rem 3rem 4rem;
+      margin: 0 auto;
+    }
+
+    /* ── Title block ── */
+    header#title-block-header {
+      text-align: center;
+      border-bottom: 3px solid var(--dtu-red);
+      padding-bottom: 2rem;
+      margin-bottom: 2.5rem;
+    }
+    h1.title {
+      font-size: 2.2rem; font-family: Arial, sans-serif;
+      color: var(--dtu-red); margin-bottom: 0.5rem; line-height: 1.25;
+    }
+    .subtitle { font-size: 1.15rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .author   { font-weight: bold; }
+    .date     { color: var(--muted); font-size: 0.9rem; }
+
+    /* ── Headings ── */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: Arial, sans-serif;
+      margin-top: 2rem; margin-bottom: 0.6rem;
+    }
+    h1 { font-size: 1.8rem; border-bottom: 2px solid var(--dtu-red); padding-bottom: 0.3rem; color: var(--dtu-red); }
+    h2 { font-size: 1.35rem; color: #550000; }
+    h3 { font-size: 1.1rem; color: var(--dark); }
+    .header-section-number { color: var(--dtu-red); margin-right: 0.4rem; }
+
+    /* ── Body text ── */
+    p { margin: 0.9em 0; }
+    a { color: var(--dtu-red); }
+    a:visited { color: #660000; }
+    img { max-width: 100%; height: auto; display: block; margin: 1rem auto; }
+
+    /* ── Code ── */
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 0.88em;
+      background: #f0f0f0;
+      border-radius: 3px;
+      padding: 0.1em 0.35em;
+    }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+    /* Syntax highlighting */
+    code span.co { color: #6a9955; }
+    code span.kw { color: #569cd6; }
+    code span.cf { color: #c586c0; }
+    code span.st { color: #ce9178; }
+    code span.im { color: #9cdcfe; }
+    code span.bu { color: #dcdcaa; }
+    code span.op { color: #d4d4d4; }
+    code span.dv { color: #b5cea8; }
+    code span.an { color: #57a64a; font-style: italic; }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; font-size: 0.92rem; }
+    thead tr { background: var(--dtu-red); color: #fff; }
+    th { padding: 0.6rem 1rem; text-align: left; }
+    td { padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); }
+    tr:nth-child(even) td { background: #f9f9f9; }
+
+    /* ── Figures ── */
+    figure { margin: 1.5rem 0; text-align: center; }
+    figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; font-style: italic; }
+
+    /* ── Lists ── */
+    ul, ol { padding-left: 1.8rem; margin: 0.7rem 0; }
+    li { margin: 0.25rem 0; }
+
+    /* ── Blockquote ── */
+    blockquote {
+      border-left: 3px solid var(--dtu-red);
+      margin: 1rem 0; padding: 0.5rem 1rem;
+      background: #fff8f8; color: var(--muted);
+    }
+
+    /* ── Math ── */
+    .math { overflow-x: auto; }
+
+    /* ── Algorithm / pseudocode ── */
+    .algorithm, .algorithmic {
+      background: #f9f9f9; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem 1.2rem;
+      margin: 1rem 0; font-size: 0.9rem;
+    }
+
+    /* ── Bibliography ── */
+    #refs { font-size: 0.9rem; }
+    #refs p { margin: 0.4rem 0; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--dark); color: #aaa;
+      text-align: center; padding: 1.5rem 1rem;
+      font-size: 0.82rem; font-family: Arial, sans-serif;
+    }
+    footer a { color: #ccc; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      #toc-sidebar { display: none; }
+      #toc-sidebar.open { display: block; position: fixed; top: 0; left: 0; width: 280px; height: 100vh; z-index: 200; box-shadow: 2px 0 12px rgba(0,0,0,.3); }
+      #toc-toggle { display: inline-block; }
+      #content { padding: 1.5rem 1.2rem 3rem; }
+    }
+    @media print {
+      #top-bar, #toc-sidebar, #toc-toggle { display: none !important; }
+      #content { max-width: 100%; padding: 0; }
+      h1 { page-break-before: always; }
+    }
+  </style>
+$for(css)$  <link rel="stylesheet" href="$css$" />
+$endfor$
+$if(math)$  $math$
+$endif$
+</head>
+<body>
+
+<div id="top-bar">
+  <h1>$if(title)$$title$$else$Thesis$endif$</h1>
+  <span class="badge">M.Sc. Thesis · DTU Compute</span>
+  <button id="toc-toggle" onclick="document.getElementById('toc-sidebar').classList.toggle('open')">☰ Contents</button>
+</div>
+
+<div id="layout">
+
+  <nav id="toc-sidebar">
+    <h2>Contents</h2>
+$if(toc)$    $toc$
+$endif$
+  </nav>
+
+  <main id="content">
+$if(title)$
+    <header id="title-block-header">
+      <h1 class="title">$title$</h1>
+$if(subtitle)$      <p class="subtitle">$subtitle$</p>
+$endif$
+$for(author)$      <p class="author">$author$</p>
+$endfor$
+$if(date)$      <p class="date">$date$</p>
+$endif$
+    </header>
+$endif$
+
+    $body$
+
+  </main>
+</div>
+
+<footer>
+  <p>
+    Master Control Unit for E-Formula &nbsp;·&nbsp;
+    DTU Compute, Technical University of Denmark &nbsp;·&nbsp;
+    <a href="https://github.com/Skitionek/master-control-unit-for-e-formula">GitHub</a>
+  </p>
+</footer>
+
+</body>
+</html>

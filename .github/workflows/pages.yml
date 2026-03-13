@@ -15,14 +15,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install pandoc
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y pandoc
+
+      - name: Render thesis to HTML
+        run: |
+          pandoc Thesis.tex \
+            --standalone \
+            --template docs/thesis-template.html \
+            --mathjax \
+            --number-sections \
+            --toc \
+            --toc-depth=3 \
+            --metadata title="Master Control Unit for E-Formula" \
+            --metadata subtitle="M.Sc. Thesis — DTU Compute" \
+            --metadata author="Dominik Mariusz Maszczyk" \
+            -t html5 \
+            -o docs/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -32,6 +49,13 @@ jobs:
         with:
           path: "./docs"
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
