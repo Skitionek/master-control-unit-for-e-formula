@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master Control Unit for E-Formula</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --dtu-red:    #990000;
+      --dtu-dark:   #1a1a1a;
+      --dtu-grey:   #f5f5f5;
+      --accent:     #cc0000;
+      --text:       #333;
+      --muted:      #666;
+      --border:     #ddd;
+      --radius:     8px;
+      --max-width:  960px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: var(--text);
+      background: #fff;
+      line-height: 1.65;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--dtu-red);
+      color: #fff;
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 0.3rem 1rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    header h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    header p.subtitle {
+      font-size: 1.15rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto 1.6rem;
+    }
+    header .cta-links a {
+      display: inline-block;
+      margin: 0.3rem 0.5rem;
+      padding: 0.55rem 1.4rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: opacity .2s;
+    }
+    header .cta-links a:hover { opacity: 0.85; }
+    .btn-white  { background: #fff; color: var(--dtu-red); }
+    .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.7); }
+
+    /* ── Main layout ── */
+    main {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    /* ── Section titles ── */
+    section { margin-top: 3rem; }
+    section h2 {
+      font-size: 1.6rem;
+      color: var(--dtu-red);
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--dtu-red);
+    }
+    section p { margin-bottom: 0.8rem; color: var(--text); }
+
+    /* ── Overview card row ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1.2rem;
+    }
+    .card {
+      background: var(--dtu-grey);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.2rem;
+      border-left: 4px solid var(--dtu-red);
+    }
+    .card .icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .card h3   { font-size: 1rem; margin-bottom: 0.4rem; }
+    .card p    { font-size: 0.88rem; color: var(--muted); margin: 0; }
+
+    /* ── Tech stack table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+    th {
+      background: var(--dtu-red);
+      color: #fff;
+      text-align: left;
+      padding: 0.65rem 1rem;
+    }
+    td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: var(--dtu-grey); }
+
+    /* ── VI list ── */
+    .vi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.7rem;
+      margin-top: 1rem;
+    }
+    .vi-item {
+      background: var(--dtu-grey);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+    }
+    .vi-item strong { display: block; color: var(--dtu-dark); font-size: 0.82rem; font-family: monospace; }
+    .vi-item span   { color: var(--muted); }
+
+    /* ── Repo tree ── */
+    pre.tree {
+      background: var(--dtu-dark);
+      color: #d4d4d4;
+      padding: 1.4rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-top: 1rem;
+    }
+
+    /* ── Compile block ── */
+    pre.code {
+      background: #1e1e1e;
+      color: #9cdcfe;
+      padding: 1.2rem 1.4rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      margin-top: 0.8rem;
+    }
+    pre.code .comment { color: #6a9955; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--dtu-dark);
+      color: #aaa;
+      text-align: center;
+      padding: 1.8rem 1rem;
+      font-size: 0.85rem;
+    }
+    footer a { color: #ccc; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="badge">M.Sc. Thesis &nbsp;·&nbsp; DTU Compute</div>
+  <h1>Master Control Unit<br>for E-Formula</h1>
+  <p class="subtitle">
+    A LabVIEW Real-Time + FPGA implementation of the Master Control Unit
+    for an electric formula racing car, communicating with EPOS2 motor
+    controllers over the CANopen protocol.
+  </p>
+  <div class="cta-links">
+    <a class="btn-white"
+       href="https://github.com/Skitionek/master-control-unit-for-e-formula">
+      View on GitHub
+    </a>
+    <a class="btn-outline"
+       href="https://github.com/Skitionek/master-control-unit-for-e-formula/tree/master/implementation">
+      Browse Implementation
+    </a>
+  </div>
+</header>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main>
+
+  <!-- Overview -->
+  <section>
+    <h2>Overview</h2>
+    <p>
+      This project designs and implements the software for a <strong>Master Control Unit (MCU)</strong>
+      that orchestrates multiple electric motor controllers in an E-Formula student racing vehicle.
+      The MCU communicates with Maxon EPOS2 motor controllers over the <strong>CANopen</strong> protocol
+      (CiA 301 / DS-402) using a National Instruments LabVIEW Real-Time + FPGA platform.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="icon">⚡</div>
+        <h3>CANopen Motor Control</h3>
+        <p>Full DS-402 drive profile implementation — NMT, PDO mapping, SDO reads, and SYNC producer.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔄</div>
+        <h3>Multi-Motor Synchronisation</h3>
+        <p>Simultaneous speed and torque control across multiple drive motors with deterministic timing.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🖥️</div>
+        <h3>FPGA-Accelerated CAN</h3>
+        <p>Low-latency CAN frame encode/decode on an NI FPGA target feeding the RT control loop.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🛡️</div>
+        <h3>Fault Handling</h3>
+        <p>CANopen emergency message parsing mapped to structured LabVIEW error clusters.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technology Stack -->
+  <section>
+    <h2>Technology Stack</h2>
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+      <tbody>
+        <tr><td>Programming environment</td><td>LabVIEW 2016</td></tr>
+        <tr><td>Execution targets</td><td>NI Real-Time controller + NI FPGA</td></tr>
+        <tr><td>Communication protocol</td><td>CANopen (CiA 301 / DS-402)</td></tr>
+        <tr><td>Motor controllers</td><td>Maxon EPOS2 (brushless DC)</td></tr>
+        <tr><td>Thesis document</td><td>XeLaTeX / Memoir class (DTU Compute format)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- LabVIEW Implementation -->
+  <section>
+    <h2>LabVIEW Implementation</h2>
+    <p>
+      The <code>implementation/</code> folder contains the complete LabVIEW project.
+      The Real-Time layer handles high-level CANopen communication while the FPGA layer
+      manages raw CAN bus I/O.
+    </p>
+
+    <h3 style="margin:1.2rem 0 0.5rem;color:var(--dtu-dark)">Real-Time VIs</h3>
+    <div class="vi-grid">
+      <div class="vi-item">
+        <strong>Boot Motor Controlers.vi</strong>
+        <span>Initialise EPOS2 controllers via CANopen NMT</span>
+      </div>
+      <div class="vi-item">
+        <strong>Control Motor Speed.vi</strong>
+        <span>Closed-loop speed reference dispatch</span>
+      </div>
+      <div class="vi-item">
+        <strong>Control motors simuntaniously.vi</strong>
+        <span>Synchronised multi-motor torque/speed control</span>
+      </div>
+      <div class="vi-item">
+        <strong>Get Actual Position.vi</strong>
+        <span>Read encoder position over TPDO</span>
+      </div>
+      <div class="vi-item">
+        <strong>Get Statusword.vi</strong>
+        <span>Poll CANopen device state machine</span>
+      </div>
+      <div class="vi-item">
+        <strong>Set Controlword.vi</strong>
+        <span>Write CANopen controlword (DS-402)</span>
+      </div>
+      <div class="vi-item">
+        <strong>Set PDOs mapping.vi</strong>
+        <span>Configure PDO communication parameters</span>
+      </div>
+      <div class="vi-item">
+        <strong>Set PDOs COB IDs.vi</strong>
+        <span>Assign CANopen COB-IDs to PDOs</span>
+      </div>
+      <div class="vi-item">
+        <strong>Set COB SYNC ID.vi</strong>
+        <span>Configure SYNC object identifier</span>
+      </div>
+      <div class="vi-item">
+        <strong>CANopen Emergency.vi</strong>
+        <span>Parse and handle emergency messages</span>
+      </div>
+      <div class="vi-item">
+        <strong>Init sync interface.vi</strong>
+        <span>Initialise CANopen SYNC producer</span>
+      </div>
+      <div class="vi-item">
+        <strong>Read TPDO.vi</strong>
+        <span>Generic TPDO reception handler</span>
+      </div>
+    </div>
+
+    <h3 style="margin:1.2rem 0 0.5rem;color:var(--dtu-dark)">FPGA VIs</h3>
+    <div class="vi-grid">
+      <div class="vi-item">
+        <strong>FPGA Main.vi</strong>
+        <span>Top-level FPGA VI — CAN transceiver I/O</span>
+      </div>
+      <div class="vi-item">
+        <strong>CAN Frame Array to Cluster.vi</strong>
+        <span>Convert raw CAN frame arrays to typed clusters</span>
+      </div>
+      <div class="vi-item">
+        <strong>Emergency message into error.vi</strong>
+        <span>Map CANopen emergency codes to LabVIEW errors</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Repository Structure -->
+  <section>
+    <h2>Repository Structure</h2>
+<pre class="tree">master-control-unit-for-e-formula/
+├── Thesis.tex                  ← Master LaTeX thesis file
+├── chapters/                   ← Thesis chapters
+├── frontmatter/                ← Summary, Preface, Acknowledgements
+├── prefrontmatter/             ← Title page &amp; colophon
+├── preamble/                   ← LaTeX configuration &amp; DTU styling
+├── appendices/
+├── bibliography/
+├── graphics/                   ← DTU logos and assets
+├── implementation/             ← LabVIEW source code
+│   └── Users/s163601/Desktop/05-28/
+│       ├── project.lvproj      ← LabVIEW project file
+│       ├── FPGA Main.vi
+│       ├── Run main.vi
+│       └── RT/                 ← Real-Time sub-VIs
+│           ├── Boot Motor Controlers.vi
+│           ├── Control Motor Speed.vi
+│           ├── Control motors simuntaniously.vi
+│           └── ...
+└── docs/                       ← GitHub Pages source (this site)</pre>
+  </section>
+
+  <!-- Thesis compilation -->
+  <section>
+    <h2>Building the Thesis</h2>
+    <p>
+      The thesis is written using Laursen's XeLaTeX template adapted for DTU Compute.
+      Requires TeX Live ≥ 2014 with XeLaTeX and Biblatex.
+    </p>
+<pre class="code"><span class="comment"># One-shot build</span>
+xelatex Thesis.tex
+biber Thesis.bcf
+xelatex Thesis.tex
+xelatex Thesis.tex
+
+<span class="comment"># Or using the Makefile (requires latexmk)</span>
+make
+
+<span class="comment"># Auto-recompile on file changes</span>
+make auto</pre>
+  </section>
+
+  <!-- Author -->
+  <section>
+    <h2>Author</h2>
+    <p>
+      <strong>Dominik Mariusz Maszczyk</strong><br>
+      M.Sc. in Engineering — DTU Compute<br>
+      Technical University of Denmark, Kongens Lyngby
+    </p>
+  </section>
+
+</main>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <p>
+    Master Control Unit for E-Formula &nbsp;·&nbsp;
+    DTU Compute, Technical University of Denmark &nbsp;·&nbsp;
+    <a href="https://github.com/Skitionek/master-control-unit-for-e-formula">GitHub</a>
+  </p>
+</footer>
+
+</body>
+</html>
